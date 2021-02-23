@@ -1,29 +1,22 @@
-
+import numpy
+import scipy.io
+from matplotlib import pyplot as plt
 import os
-project_path = '/worktmp/hxkhkh/project2/'
+path_project = '/worktmp/hxkhkh/project2/'
+file_in = 'info_SI_res224_softmax_best.mat'
+file_out = 'SI_res224_softmax_best'
 ###############################################################################
 # this file first loads confusion matrix and TP/FP/FN overlap related data 
 # and plotts detection + precision and recall results
 ###############################################################################
-in_path_corrected_ind = os.path.join(project_path , 'outputs/step_6/step_2/')
-in_path_labels = os.path.join(project_path , 'outputs/step_6/step_4/')
 
-in_path_processed_nouns = os.path.join(project_path , 'outputs/step_6/step_5/')
-metadata_path  = os.path.join(project_path , 'outputs/step_1/validation/')
+path_in = os.path.join(path_project , 'outputs/step_7/step_2/')
+path_out = os.path.join(path_project , 'outputs/step_7/step_3/')
 
-in_path = os.path.join(project_path , 'outputs/step_7/step_2/')
-
-out_path = os.path.join(project_path , 'outputs/step_7/step_3/')
-
-###############################################################################
-import numpy
-import scipy.io
-from matplotlib import pyplot as plt
 ###############################################################################
                         # 2. Loading coco tool #
 ############################################################################### loading coco package
 from pycocotools.coco import COCO
-
 dataDir='/worktmp/hxkhkh/data/coco/MSCOCO/'
 dataType='val2014'
 annFile='{}/annotations/instances_{}.json'.format(dataDir,dataType)
@@ -35,11 +28,10 @@ coco_caps=COCO(anncaptionFile)
 
 cats = coco.loadCats(coco.getCatIds())
 cats_id = [item['id'] for item in cats]
-cats_names = [item['name']for item in cats]
-   
+cats_names = [item['name']for item in cats]  
 ############################################################################### plotting
 
-data = scipy.io.loadmat(in_path + 'all_info_WI_norm_updated2.mat', variable_names = ['all_labels_info','cm_detected'])
+data = scipy.io.loadmat(path_in + file_in , variable_names = ['all_labels_info','cm_detected'])
 
 all_labels_info = data['all_labels_info']
 cm_detected = data['cm_detected']
@@ -68,7 +60,7 @@ plt.xticks(numpy.arange(80), fontsize = 10)
 plt.grid()
 plt.legend(fontsize = 10)
 
-plt.savefig(out_path + 'test_WI_norm_updated2.pdf', format = 'pdf')
+plt.savefig(path_out + file_out + '_overlaps.pdf', format = 'pdf')
 
 ############################################################################## CM measures
 # #....................................................................    
@@ -105,4 +97,4 @@ plt.legend()
 plt.grid()
 
 
-plt.savefig(out_path + 'precision_overlap_norm_updated2.pdf', format = 'pdf')       
+plt.savefig(path_out + file_out +  '_precision_recall.pdf', format = 'pdf')       

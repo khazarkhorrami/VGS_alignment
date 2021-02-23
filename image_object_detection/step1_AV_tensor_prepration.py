@@ -6,15 +6,19 @@ import pickle
 # and then select corrected ones based on spellcheck applied in step 2
 # next it calculates object mask within time interval of spoken word label and saves WI masks
 ###############################################################################
-in_path_nouns = '/worktmp/hxkhkh/project2/outputs/step_6/step_1/'
-in_path_corrected_ind = '/worktmp/hxkhkh/project2/outputs/step_6/step_2/'
-in_path_modelWI = '/worktmp/hxkhkh/project2/outputs/step_7/step_0/'
-in_path_processed_nouns = '/worktmp/hxkhkh/project2/outputs/step_6/step_5/'
+path_in_nouns = '/worktmp/hxkhkh/project2/outputs/step_6/step_1/'
+path_in_corrected_ind = '/worktmp/hxkhkh/project2/outputs/step_6/step_2/'
 
-out_path = '/worktmp/hxkhkh/project2/outputs/step_7/step_1/'
+path_in_tensor = '/worktmp/hxkhkh/project2/outputs/step_5/hidden/'
+file_in_tensor = 'SI_CNN2_v2.mat'
+
+path_in_processed_nouns = '/worktmp/hxkhkh/project2/outputs/step_6/step_5/'
+
+path_out = '/worktmp/hxkhkh/project2/outputs/step_7/step_1/'
+file_out = 'sub_labels_masks_SI'
 ###############################################################################
 ############################################################################### output of word captions, onsets and offsets
-data = scipy.io.loadmat(in_path_nouns + 'noun_data.mat', variable_names = ['wavfile_nouns','wavfile_nouns_onsets','wavfile_nouns_offsets'])
+data = scipy.io.loadmat(path_in_nouns + 'noun_data.mat', variable_names = ['wavfile_nouns','wavfile_nouns_onsets','wavfile_nouns_offsets'])
 
 #wavfile_nouns = data ['wavfile_nouns'][0]
 wavfile_nouns_onsets = data ['wavfile_nouns_onsets'][0]
@@ -44,7 +48,7 @@ wavfile_nouns_offsets = [item for item in obj]
 
 ############################################################################### output of spell correction
 
-data = scipy.io.loadmat(in_path_corrected_ind + 'corrected_nouns_index.mat', variable_names = ['ind_accepted'])
+data = scipy.io.loadmat(path_in_corrected_ind + 'corrected_nouns_index.mat', variable_names = ['ind_accepted'])
 
 ind_accepted = data['ind_accepted'][0]
 
@@ -65,18 +69,18 @@ del wavfile_offsets_corrected
 # next step: to remove empty lists from set of selected nouns/onsets/offsets
 ############################################################################### loading the model output
 
-data = scipy.io.loadmat(in_path_modelWI + 'WI_CNN2_v2.mat' , variable_names = ['out_wigthI'])
+data = scipy.io.loadmat(path_in_tensor + file_in_tensor  , variable_names = ['out_layer'])
 
-out_wigthI = data['out_wigthI']
-out_wigthI = out_wigthI [ind_accepted]
+out_layer = data['out_layer']
+out_layer = out_layer [ind_accepted]
 
 ############################################################################### loading substitue nouns and coressponding indexes
-data = scipy.io.loadmat(in_path_processed_nouns + 'sub_labels.mat', variable_names = ['all_accpted_words','all_accepted_ind'])
+data = scipy.io.loadmat(path_in_processed_nouns + 'sub_labels.mat', variable_names = ['all_accpted_words','all_accepted_ind'])
 
 #all_subnouns = data ['all_accpted_words'][0]
 all_subinds = data ['all_accepted_ind'][0]
 
-all_WI_masks = []
+all_detected_masks = []
 for counter_image in range(len(all_subinds)):
     #simulated_nouns = all_subnouns [counter_image]
     simulated_nouns_ind = all_subinds[counter_image]
@@ -96,7 +100,7 @@ for counter_image in range(len(all_subinds)):
             
             word_onset = caption_onsets[ind_word]
             word_offset = caption_offsets[ind_word] + 1
-            mask_detected = out_wigthI[counter_image,  word_onset:word_offset , : ]
+            mask_detected = out_layer[counter_image,  word_onset:word_offset , : ]
             im_masks.append((mask_detected))
             # word_label_list = simulated_nouns[counter_candidates]
             # if len(word_label_list)==1:
@@ -105,7 +109,7 @@ for counter_image in range(len(all_subinds)):
             #     label =  word_label_list[0].strip() + ' '+ word_label_list[1].strip()
             #print('....' + label+ '....')
         
-    all_WI_masks.append((im_masks))
+    all_detected_masks.append((im_masks))
     
 
 #scipy.io.savemat(out_path + 'sub_labels_masks.mat', {'all_WA_masks':all_WA_masks})
@@ -113,6 +117,6 @@ for counter_image in range(len(all_subinds)):
 
 
 
-file = open(out_path + 'sub_labels_masks','wb')
-new_dict = pickle.dump(all_WI_masks, file)
+file = open(path_out + file_out ,'wb')
+new_dict = pickle.dump(all_detected_masks, file)
 file.close()
