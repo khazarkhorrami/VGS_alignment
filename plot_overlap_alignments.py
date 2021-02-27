@@ -4,11 +4,11 @@ from matplotlib import pyplot as plt
 import os
 
 
-path_project = '/worktmp/hxkhkh/project3/'
+path_project = '/worktmp/hxkhkh/project_3/'
 
 file_in_AVtensor  = 'SI_CNN2_v2'
 
-file_in = 'alignments' + file_in_AVtensor 
+file_in = 'alignments_' + file_in_AVtensor 
 file_out = file_in
 
 
@@ -30,8 +30,10 @@ cats_id = [item['id'] for item in cats]
 cats_names = [item['name']for item in cats]  
 ############################################################################### plotting
 
-data = scipy.io.loadmat(path_in + file_in + '.mat' , variable_names = ['all_sa_scores', 'all_ta_scores' , 'all_meta_info'])
+data = scipy.io.loadmat(path_in + file_in + '.mat' , variable_names = ['all_sa_scores', 'all_ta_scores' ,'allrand_sa_scores', 'allrand_ta_scores', 'all_meta_info'])
 
+allrand_sa_scores = data['allrand_sa_scores']
+allrand_ta_scores = data['allrand_ta_scores']
 all_sa_scores = data['all_sa_scores']
 all_ta_scores = data['all_ta_scores']
 all_meta_info = data['all_meta_info']
@@ -40,35 +42,43 @@ average_sa = numpy.mean((all_sa_scores[:,0]/all_meta_info[:,-1]))
 average_sa = round(average_sa,3)
 
 average_ta = numpy.mean((all_ta_scores[:,0]/all_meta_info[:,-1]))
-average_ta = round(average_sa,3)
+average_ta = round(average_ta,3)
 
+average_saRand = numpy.mean((allrand_sa_scores[:,0]/all_meta_info[:,-1]))
+average_saRand = round(average_saRand,3)
+
+average_taRand = numpy.mean((allrand_ta_scores[:,0]/all_meta_info[:,-1]))
+average_taRand = round(average_taRand,3)
 
 plt.figure(figsize=[24,8])
 
 plt.subplot(5,1,1)
-plt.plot( all_sa_scores[:,0]/all_meta_info[:,-1] , label = 'Averaged sa_score '+str(average_sa) , color = 'g')
+plt.plot( all_sa_scores[:,0]/all_meta_info[:,-1] , label = 'Average sa_score '+str(average_sa) , color = 'r')
+plt.plot( allrand_sa_scores[:,0]/all_meta_info[:,-1] , label = 'baseline '+str(average_saRand) , color = 'k')
 plt.xticks(numpy.arange(80), fontsize = 10)
 plt.grid()
 plt.legend(fontsize = 10)
 
 plt.subplot(5,1,2)
-plt.plot( all_ta_scores[:,0]/all_meta_info[:,-1] , label = 'Averaged ta_score '+str(average_ta) , color = 'g')
+plt.plot( all_ta_scores[:,0]/all_meta_info[:,-1] , label = 'Average ta_score '+str(average_ta) , color = 'b')
+plt.plot( allrand_ta_scores[:,0]/all_meta_info[:,-1] , label = 'baseline '+str(average_taRand) , color = 'k')
 plt.xticks(numpy.arange(80), fontsize = 10)
 plt.grid()
 plt.legend(fontsize = 10)
 
 plt.subplot(5,1,3)
-plt.plot(all_meta_info[:,0] /all_meta_info[:,-1] ,label='Averaged pixel area', color = 'r')
+plt.plot(all_meta_info[:,0] /all_meta_info[:,-1] ,label='Average pixel area', color = 'g')
 plt.xticks(numpy.arange(80), fontsize = 10)
 plt.grid()
 plt.legend(fontsize = 10)
 
 plt.subplot(5,1,4)
-plt.plot(all_meta_info[:,0] / all_meta_info[:,-1] ,label='Averaged duration (in frames)', color = 'r')
+plt.plot(all_meta_info[:,1] / all_meta_info[:,-1] ,label='Average duration (frames)', color = 'g')
 plt.xticks(numpy.arange(80), fontsize = 10)
 plt.grid()
 plt.legend(fontsize = 10)
 
+all_meta_info[0,-1]= 1500
 plt.subplot(5,1,5)
 plt.plot(all_meta_info[:,-1]  ,label='Number of instances', color = 'k')
 plt.xticks(numpy.arange(80), fontsize = 10)
@@ -77,3 +87,22 @@ plt.legend(fontsize = 10)
 
 plt.savefig(path_out + file_out + '_overlaps.pdf', format = 'pdf')
 
+
+x = all_meta_info[:,0] /all_meta_info[:,-1]
+
+y_sa = all_sa_scores[:,0]/all_meta_info[:,-1]
+y_sa_base = allrand_sa_scores[:,0]/all_meta_info[:,-1]
+
+y_ta = all_ta_scores[:,0]/all_meta_info[:,-1]
+y_ta_base = allrand_ta_scores[:,0]/all_meta_info[:,-1]
+
+plt.figure(figsize=[8,8])
+
+scatter_plot = plt.scatter( x,y_sa , color='r' , label = 'spatial')
+scatter_plot = plt.scatter( x,y_sa_base , color='r', alpha = 0.2, label = 'baseline spatial' )
+scatter_plot = plt.scatter( x,y_ta , color='b' , marker = '^', label = 'temporal')
+scatter_plot = plt.scatter( x,y_ta_base , color='b',marker = '^', alpha = 0.2, label = 'baseline temporal' )
+plt.xlabel('\nAverage object area',fontsize = 12)
+plt.ylabel('Alignment scores\n',fontsize = 12)
+plt.legend(fontsize = 12)
+plt.savefig(path_out + file_out + '_scatter.pdf', format = 'pdf')
