@@ -23,12 +23,8 @@ file_in_labels = 'unified_labels.mat'
 path_in_processed_nouns = os.path.join(path_project , 'outputs/step_1/6/')
 file_in_processed_nouns = 'sub_labels.mat'
 
-# path_in_processes_time = os.path.join(path_project ,'outputs/step_6/step_6/' )
-# file_in_processes_time = 'sub_times.mat'
-
 path_in_AVtensor = os.path.join('/worktmp/hxkhkh/project2/' ,'outputs/step_5/hidden/')
 file_in_AVtensor = 'SI_CNN2_v2'
-
 
 
 path_out = os.path.join(path_project , 'outputs/step_2/')
@@ -161,14 +157,8 @@ tensor_input = tensor_input
 #.....................
 
 data = scipy.io.loadmat(path_in_metadata + file_in_metadata, variable_names=['list_of_images','image_id_all'])
-all_image_ids = data ['image_id_all'][0]          
-temp = all_image_ids
-all_image_ids = []
-for item in temp:
-    value = item[0].strip()
-    all_image_ids.append(value)
-del temp
-all_image_ids = [all_image_ids[item] for item in ind_accepted]
+all_image_ids = data ['image_id_all'][0]
+all_image_ids = [ item[0].strip() for item in all_image_ids] 
 
 #.....................
 
@@ -177,33 +167,14 @@ all_nouns = data ['all_accpted_words'][0]
 all_inds = data ['all_accepted_ind'][0]
 all_onsets = data ['all_accpted_onsets'][0]
 all_offsets = data ['all_accpted_offsets'][0]
-
-number_of_items = 0
-temp = all_nouns
-all_nouns = []
-for imitem in temp:
-    subnouns_im = []
-    for subitem in imitem:
-        if subitem:
-            correct_noun = subitem.strip()
-            subnouns_im.append(correct_noun)
-            number_of_items += 1
-    all_nouns.append(subnouns_im)        
-del temp
+all_nouns = [ [subitem.strip() for subitem in imitem if subitem ] for imitem in all_nouns ]
 
 #.....................
 
 data = scipy.io.loadmat(path_in_labels + file_in_labels, variable_names =['ref_names_all'])
 all_reference_names = data['ref_names_all'][0]
 all_reference_names = [all_reference_names[item] for item in ind_accepted]
-temp = all_reference_names
-all_reference_names = []
-for utterance in temp:
-    correct_utterance = []
-    for phoneme in utterance:
-        correct_ph  = phoneme.strip()
-        correct_utterance.append(correct_ph)
-    all_reference_names.append(correct_utterance)    
+all_reference_names = [ [phoneme.strip() for phoneme in utterance] for utterance in all_reference_names ]
 
 #.....................
 
@@ -241,8 +212,6 @@ tensor_input_SA = numpy.reshape(tensor_input_SA, [tensor_input.shape[0], res_sou
 
 tensor_input_TA = softmax_temporal(tensor_input)
 tensor_input_TA = numpy.reshape(tensor_input_TA, [tensor_input.shape[0], res_source_t , res_source_h, res_source_w])
-
-
 
 
 for counter_image in range(number_of_images):
@@ -314,5 +283,4 @@ scipy.io.savemat(path_out + file_out + '.mat' , {'all_sa_scores':all_sa_scores, 
                                                  'allrand_ta_scores': allrand_ta_scores, 'allrand_sa_scores': allrand_sa_scores ,
                                                  'all_meta_info':all_meta_info})                
                 
-# from matplotlib import pyplot as plt
-# plt.imshow(numpy.sum (tensor_in_ta[t_onset:t_offset , :, : ] , axis = 0 ))                
+         
