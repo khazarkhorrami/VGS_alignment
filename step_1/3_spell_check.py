@@ -39,7 +39,7 @@ for utterance in temp:
         correct_ph  = phoneme.strip()
         correct_utterance.append(correct_ph)
     wavfile_nouns.append(correct_utterance)   
-###############################################################################
+
 
 ###############################################################################
 #.......................................... 

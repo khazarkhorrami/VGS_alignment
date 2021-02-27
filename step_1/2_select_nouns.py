@@ -25,8 +25,8 @@ import numpy
 import scipy.io
 import nltk
 
-path_out = '/worktmp/hxkhkh/project_3/output/step_1/2/'
-path_in = '/worktmp/hxkhkh/project_3/output/step_1/1/'
+path_out = '/worktmp/hxkhkh/project_3/outputs/step_1/2/'
+path_in = '/worktmp/hxkhkh/project_3/outputs/step_1/1/'
 
 file_in = 'word_data.mat'
 file_out = 'noun_data.mat'
@@ -88,20 +88,15 @@ for counter_utterance  in range(len(wavfile_words)):
     candidate_utterance_offsets = wavfile_words_offsets[counter_utterance]
     
     candidate_nouns_ind = detec_nouns (candidate_utterance)
-    if candidate_nouns_ind : 
-        candidate_nouns = [candidate_utterance[item] for item in candidate_nouns_ind]
-        candidate_onsets = [candidate_utterance_onsets[item] for item in candidate_nouns_ind]
-        candidate_offsets = [candidate_utterance_offsets[item] for item in candidate_nouns_ind]
-        
-        wavfile_nouns.append(candidate_nouns)
-        wavfile_nouns_onsets.append(candidate_onsets)
-        wavfile_nouns_offsets.append(candidate_offsets)
+    candidate_nouns = [candidate_utterance[item] for item in candidate_nouns_ind]
+    candidate_onsets = [candidate_utterance_onsets[item] for item in candidate_nouns_ind]
+    candidate_offsets = [candidate_utterance_offsets[item] for item in candidate_nouns_ind]
     
-    else:
-        
-        wavfile_nouns.append([])
-        wavfile_nouns_onsets.append([])
-        wavfile_nouns_offsets.append([])
+    wavfile_nouns.append(candidate_nouns)
+    wavfile_nouns_onsets.append(candidate_onsets)
+    wavfile_nouns_offsets.append(candidate_offsets)
+    
+ 
 scipy.io.savemat(path_out + file_out, {'wavfile_nouns':wavfile_nouns,'wavfile_nouns_onsets':wavfile_nouns_onsets,
                                                              'wavfile_nouns_offsets':wavfile_nouns_offsets})
 
