@@ -87,6 +87,7 @@ plt.legend(fontsize = 10)
 
 plt.savefig(path_out + file_out + '_overlaps.pdf', format = 'pdf')
 
+############################################################################## Scatter plot
 
 x = all_meta_info[:,0] /all_meta_info[:,-1]
 
