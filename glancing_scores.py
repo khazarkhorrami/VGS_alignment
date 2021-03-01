@@ -28,7 +28,7 @@ file_in_AVtensor = 'SI_CNN2_v2'
 
 
 path_out = os.path.join(path_project , 'outputs/step_2/')
-file_out = 'test_alignments_' + file_in_AVtensor 
+file_out = 'glancing_' + file_in_AVtensor 
 #.............................................................................. input parameters
 
 res_target_h = 224    
@@ -76,8 +76,8 @@ def compute_GT_mask (label,imID,imH,imW):
     mask_annitem = numpy.zeros([imH,imW])
     for item in anns: # constructing true mask by ading all mask items
         mask_temp = coco.annToMask(item )
-        mask_annitem =mask_annitem + mask_temp 
-    mask_annitem = cv2.resize(mask_annitem, (res_target_w,res_target_h))           
+        mask_annitem = mask_annitem + mask_temp
+    mask_annitem = cv2.resize(mask_annitem, (res_target_w,res_target_h))       
     return mask_annitem, anncatind
 
 
@@ -86,61 +86,51 @@ def upsample_3D (input_tensor,scale_T , scale_H, scale_W):
     output_tensor = numpy.repeat (numpy.repeat(tensor_detected_uptime,scale_W, axis=2)  , scale_H , axis=1)
     return output_tensor
 
-def normalize_across_pixels (input_tensor):
-    norm_factor = numpy.sum(input_tensor, axis =(1,2) )
-    norm_tensor = numpy.repeat(norm_factor[ : ,numpy.newaxis], input_tensor.shape[1], axis=1)
-    norm_tensor = numpy.repeat(norm_tensor[:,  : , numpy.newaxis ], input_tensor.shape[2], axis=2)
-    output_tensor = input_tensor/ norm_tensor
-    return output_tensor
+def normalize_across_pixels (input_mask):
+    norm_factor = numpy.sum(input_mask)
+    output_mask = input_mask/ norm_factor
+    return output_mask
 
 def normalize_across_time(input_tensor):
-    norm_factor = numpy.sum(input_tensor, axis = 0 )
-    norm_tensor = numpy.repeat(norm_factor[numpy.newaxis , : , :], input_tensor.shape[0], axis=0)
-    output_tensor = input_tensor/ norm_tensor
+    norm_factor = numpy.sum(input_tensor)
+    output_tensor = input_tensor/ norm_factor
     return output_tensor
 
-def compute_sa_score(tensor_1, tensor_2):
-    tensor_overlap = tensor_1*tensor_2
-    sa_score_frames = numpy.sum(tensor_overlap , axis = (1,2))
-    sa_score= round(numpy.mean(sa_score_frames) , 3)
+def compute_sa_score(mask_1, mask_2):
+    mask_overlap = mask_1*mask_2
+    sa_score = round ( numpy.sum(mask_overlap) , 3)
     return sa_score
 
-def compute_ta_score(tensor_1, tensor_2):
-    tensor_overlap = tensor_1*tensor_2
-    ta_score_pixels = numpy.sum(tensor_overlap , axis = 0)
-    ta_score= round(numpy.mean(ta_score_pixels) , 3)
-    return ta_score
 
-def compute_spatial_alignment (t_on, t_off,tensor_AV_image, imID):
+def compute_spatial_alignment (t_on, t_off,tensor_AV_image,sub_noun, imID):
     img = coco.loadImgs(imID)[0]
     imID = img['id']
     imW = img['width']
     imH = img['height']
-    mask_GT, label_id = compute_GT_mask (subnoun,imID,imH,imW)
-    mask_GT = 1*(mask_GT>=0.01)
+    mask_GT, label_id = compute_GT_mask (sub_noun,imID,imH,imW) 
+    mask_GT = 1*(mask_GT>=0.01) # very low thresh leads to many overlapping pixels between objects    
     s_GT = numpy.sum(mask_GT)
-    n_frames = t_off - t_on
-    tensor_GT = numpy.repeat(mask_GT[numpy.newaxis,:,:],n_frames , axis =0 )
-       
-    tensor_av_subnoun = tensor_AV_image[t_on:t_off,:,:]
-    tensor_av_subnoun_norm = normalize_across_pixels (tensor_av_subnoun)
-    score_sa = compute_sa_score(tensor_GT, tensor_av_subnoun_norm)
     
+    tensor_av_subnoun = tensor_AV_image[t_on:t_off,:,:]
+    mask_av_subnoun = numpy.sum(tensor_av_subnoun , axis = 0)
+    mask_av_subnoun_norm = normalize_across_pixels (mask_av_subnoun)   
+    score_sa = compute_sa_score(mask_GT, mask_av_subnoun_norm)    
     return score_sa, s_GT , label_id
 
-def compute_temporal_alignment (t_on, t_off,tensor_AV_image, imID):
+def compute_temporal_alignment (t_on, t_off,tensor_AV_image, sub_noun, imID):
     img = coco.loadImgs(imID)[0]
     imID = img['id']
     imW = img['width']
-    imH = img['height']   
-    mask_GT, label_id = compute_GT_mask (subnoun,imID,imH,imW)
-    mask_GT = 1*(mask_GT>=0.01)
-    n_frames = t_off - t_on
-    tensor_GT = numpy.repeat(mask_GT[numpy.newaxis,:,:],n_frames , axis =0 )
+    imH = img['height']
+    mask_GT, label_id = compute_GT_mask (sub_noun,imID,imH,imW) 
+    mask_GT = 1*(mask_GT>=0.01)    
+    tensor_GT = numpy.repeat(mask_GT[numpy.newaxis , : , : ], 512, axis = 0)
     
-    tensor_av_norm = normalize_across_time (tensor_AV_image)
-    tensor_av_subnoun = tensor_av_norm[t_on:t_off,:,:]     
-    score_ta = compute_ta_score(tensor_GT, tensor_av_subnoun)
+    tensor_av_subnoun = tensor_AV_image * tensor_GT
+    mask_av_subnoun = numpy.sum(tensor_av_subnoun , axis = (1,2))    
+    mask_av_norm = normalize_across_time (mask_av_subnoun)
+    score_ta = numpy.sum ( mask_av_norm[t_on:t_off]  )
+    score_ta = round(score_ta, 3)
     return score_ta
                 
 #.............................................................................. loading input files
@@ -160,7 +150,6 @@ data = scipy.io.loadmat(path_in_metadata + file_in_metadata, variable_names=['li
 all_image_ids = data ['image_id_all'][0]
 all_image_ids = [ item[0].strip() for item in all_image_ids] 
 all_image_ids = [all_image_ids[item] for item in ind_accepted]
-
 #.....................
 
 data = scipy.io.loadmat(path_in_processed_nouns + file_in_processed_nouns, variable_names = ['all_accpted_words','all_accepted_ind','all_accpted_onsets','all_accpted_offsets'])
@@ -251,22 +240,20 @@ for counter_image in range(number_of_images):
                 t_offset_sa = int(t_offsets_image[counter_label])
                 t_duration = t_offset_sa - t_onset_sa
                 
-                score_sa, area_GT , col = compute_spatial_alignment (t_onset_sa, t_offset_sa ,tensor_in_sa, imageID)
-                print(score_sa)
-                
-                scorerand_sa, arearand_GT , col = compute_spatial_alignment (t_onset_sa, t_offset_sa ,tensor_rand, imageID)
+                score_sa, area_GT , col = compute_spatial_alignment (t_onset_sa, t_offset_sa ,tensor_in_sa, subnoun, imageID)
+                #print(score_sa)               
+                scorerand_sa, arearand_GT , col = compute_spatial_alignment (t_onset_sa, t_offset_sa ,tensor_rand, subnoun, imageID)
+                #print(scorerand_sa)
                 
                 #.............................................................................. Temporal Alignment
-                t_onset = int(numpy.maximum (t_onsets_image[counter_label] - 50 , 0 ))
-                t_offset = int(numpy.minimum (t_offsets_image[counter_label]+ 50 , 512))
+                t_onset_ta = int(numpy.maximum (t_onsets_image[counter_label] - 50 , 0 ))
+                t_offset_ta = int(numpy.minimum (t_offsets_image[counter_label]+ 50 , 512))               
+                t_duration_extra = t_offset_ta - t_onset_ta
                 
-                t_duration_extra = t_offset- t_onset
-                
-                score_ta = compute_temporal_alignment (t_onset, t_offset,tensor_in_ta, imageID)
-                print(score_ta)
-                
-                scorerand_ta = compute_temporal_alignment (t_onset, t_offset, tensor_rand, imageID)
-                
+                score_ta = compute_temporal_alignment (t_onset_ta , t_offset_ta ,tensor_in_ta, subnoun, imageID)
+                #print(score_ta)               
+                scorerand_ta = compute_temporal_alignment (t_onset_ta , t_offset_ta , tensor_rand,subnoun, imageID)
+                #print(scorerand_ta)
                 
                 #.............................................................................. Saving results
                 if ~numpy.isnan(score_sa) and ~numpy.isnan(scorerand_sa) and ~numpy.isnan(score_ta) and ~numpy.isnan(scorerand_ta):
@@ -284,7 +271,9 @@ for counter_image in range(number_of_images):
                     nanfound.append(counter_image)
                 
 scipy.io.savemat(path_out + file_out + '.mat' , {'all_sa_scores':all_sa_scores, 'all_ta_scores':all_ta_scores, 
-                                                 'allrand_ta_scores': allrand_ta_scores, 'allrand_sa_scores': allrand_sa_scores ,
-                                                 'all_meta_info':all_meta_info})                
+                                                  'allrand_ta_scores': allrand_ta_scores, 'allrand_sa_scores': allrand_sa_scores ,
+                                                  'all_meta_info':all_meta_info, 'nanfound':nanfound})                
                 
-         
+# from matplotlib import pyplot as plt
+# plt.imshow(numpy.sum (tensor_in_ta[t_onset:t_offset , :, : ] , axis = 0 ))                
+(t_on, t_off,tensor_AV_image, imID) = (t_onset_sa, t_offset_sa ,tensor_in_sa, imageID)
