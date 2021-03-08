@@ -1,5 +1,5 @@
-# MISA with layer normalization, m = 0.1
-graph_title  = 'DaveNet model with m = 0.1'
+# MISA with layer normalization, m = 0.1, and self attention
+graph_title  = 'DaveNet self-attention with m = 0.1'
 
 import tensorflow as tf
 
@@ -12,7 +12,7 @@ machine_path = '/worktmp/hxkhkh/'
 #machine_path = '/worktmp/khorrami/'
 #machine_path = '/scratch/hxkhkh/'
 
-modeldir = machine_path +  'project2/current/outputs/models/coco/CNN0/v3/'
+modeldir = machine_path +  'project2/current/outputs/models/coco/CNN3/v0/'
 datadir = machine_path +  'features/coco/old/threechunks/'
 ###############################################################################
 # The main code starts here
@@ -48,36 +48,61 @@ Y_shape = (14,14,512)
 audio_sequence = Input(shape=X_shape)
 
 # layer 1
-# 65 ms
+
 forward1 = Conv1D(128,5,padding="same",activation=activation_C,name = 'conv1')(audio_sequence)
 dr1 = Dropout(dropout_size)(forward1)
 bn1 = BatchNormalization(axis=-1)(dr1)
 
 # layer 2
-# 165 ms
-forward2 = Conv1D(256,11,padding="same",activation=activation_C,name = 'conv2')(bn1)
+forward2 = Conv1D(128,11,padding="same",activation=activation_C,name = 'conv2')(bn1)
 dr2 = Dropout(dropout_size)(forward2)
-bn2 = BatchNormalization(axis=-1)(dr2)
-#185 ms 
+bn2 = BatchNormalization(axis=-1)(dr2) 
 pool2 = MaxPooling1D(3,strides = 2, padding='same')(bn2)
 
 # layer 3
-# 525 ms (word/syllable)
-forward3 = Conv1D(256,17,padding="same",activation=activation_C,name = 'conv3')(pool2)
+forward3 = Conv1D(128,17,padding="same",activation=activation_C,name = 'conv3')(pool2)
 dr3 = Dropout(dropout_size)(forward3)
 bn3 = BatchNormalization(axis=-1)(dr3) 
-# 565 ms
-pool3 = MaxPooling1D(3,strides = 2,padding='same')(bn3)
+#pool3 = MaxPooling1D(3,strides = 2,padding='same')(bn3)
+#################################### self attention ###########################
+att1_input = bn3
+keyImage = att1_input
+valueImage =att1_input
+queryAudio = att1_input
 
+scoreI = keras.layers.dot([queryAudio,keyImage], normalize=False, axes=-1,name='scoreatt1')
+weightI = Softmax(name='weigthatt1')(scoreI)
+
+valueImage = Permute((2,1))(valueImage)
+att1_output = keras.layers.dot([weightI, valueImage], normalize=False, axes=-1,name='att1')
+
+concat1 = Concatenate(axis=-1)([att1_output, att1_input])
+pool3 = MaxPooling1D(3,strides = 2, padding='same')(concat1) # 256*512
+
+###############################################################################
 # layer 4
-# 1245 ms (phrase)
-forward4 = Conv1D(512,17,padding="same",activation=activation_C,name = 'conv4')(pool3)
+forward4 = Conv1D(256,17,padding="same",activation=activation_C,name = 'conv4')(pool3)
 dr4 = Dropout(dropout_size)(forward4)
 bn4 = BatchNormalization(axis=-1)(dr4) 
-pool4 = MaxPooling1D(3,strides = 2,padding='same')(bn4)
+#pool4 = MaxPooling1D(3,strides = 2, padding='same')(bn4)
 
+#################################### self attention ###########################
+att2_input = bn4
+keyImage = att2_input
+valueImage =att2_input
+queryAudio = att2_input
+
+scoreI = keras.layers.dot([queryAudio,keyImage], normalize=False, axes=-1,name='scoreatt2')
+weightI = Softmax(name='weigthatt2')(scoreI)
+
+valueImage = Permute((2,1))(valueImage)
+att2_output = keras.layers.dot([weightI, valueImage], normalize=False, axes=-1,name='att2')
+
+concat2 = Concatenate(axis=-1)([att2_output, att2_input])
+pool4 = MaxPooling1D(3,strides = 2, padding='same')(concat2) # 256*512
+
+###############################################################################
 # layer 5
-# 2685 ms
 forward5 = Conv1D(512,17,padding="same",activation=activation_C,name = 'conv5')(pool4)
 dr5 = Dropout(dropout_size)(forward5)
 bn5 = BatchNormalization(axis=-1,name='audio_branch')(dr5) 
@@ -88,11 +113,26 @@ out_audio_channel = bn5
 visual_sequence = Input(shape=Y_shape)
 visual_sequence_norm = BatchNormalization(axis=-1, name = 'bn0_visual')(visual_sequence)
 
-forward_visual = Conv2D(512,(3,3),strides=(1,1),padding = "same", activation='linear', name = 'conv_visual')(visual_sequence_norm)
+forward_visual = Conv2D(256,(3,3),strides=(1,1),padding = "same", activation='linear', name = 'conv_visual')(visual_sequence_norm)
 dr_visual = Dropout(dropout_size,name = 'dr_visual')(forward_visual)
-bn_visual = BatchNormalization(axis=-1,name = 'bn1_visual')(dr_visual)
+bn_visual = BatchNormalization(axis=-1,name = 'bn1_visual')(dr_visual) #14*14*512
+reshape_visual_channel = Reshape([196,256],name='reshape_visual')(bn_visual) #196*512
+#out_visual_channel = reshape_visual_channel
 
-out_visual_channel = Reshape([196,512],name='reshape_visual')(bn_visual)
+#################################### self attention ###########################
+att3_input = reshape_visual_channel
+keyImage = att3_input
+valueImage =att3_input
+queryAudio = att3_input
+
+scoreI = keras.layers.dot([queryAudio,keyImage], normalize=False, axes=-1,name='scoreatt3')
+weightI = Softmax(name='weigthatt3')(scoreI)
+
+valueImage = Permute((2,1))(valueImage)
+att3_output = keras.layers.dot([weightI, valueImage], normalize=False, axes=-1,name='att3')
+
+concat3 = Concatenate(axis=-1)([att3_output, att3_input])
+out_visual_channel = concat3
 
 ############################################################################### combining audio and visual channels
 
@@ -229,38 +269,48 @@ def calculate_recallat10( audio_embedd,visual_embedd, sampling_times,  number_of
                         # defining the new Audio model #
 ###############################################################################
 
-new_audio_model = Model(inputs=audio_sequence,outputs=out_audio)
+# new_audio_model = Model(inputs=audio_sequence,outputs=out_audio)
 
-for n in range(13):
-    new_audio_model.layers[n].set_weights(model.layers[n].get_weights())
+# for n in range(18):
+#     new_audio_model.layers[n].set_weights(model.layers[n].get_weights())
    
-new_audio_model.layers[13].set_weights(model.layers[14].get_weights())
-new_audio_model.layers[14].set_weights(model.layers[16].get_weights())
-new_audio_model.layers[15].set_weights(model.layers[18].get_weights()) 
-new_audio_model.layers[16].set_weights(model.layers[20].get_weights()) 
-new_audio_model.layers[17].set_weights(model.layers[22].get_weights()) 
-new_audio_model.layers[18].set_weights(model.layers[24].get_weights()) 
-new_audio_model.layers[19].set_weights(model.layers[26].get_weights())
-new_audio_model.layers[20].set_weights(model.layers[28].get_weights()) # out audio
+# new_audio_model.layers[18].set_weights(model.layers[19].get_weights())
+# new_audio_model.layers[19].set_weights(model.layers[21].get_weights())
+# new_audio_model.layers[20].set_weights(model.layers[23].get_weights()) 
+# new_audio_model.layers[21].set_weights(model.layers[25].get_weights()) 
+# new_audio_model.layers[22].set_weights(model.layers[26].get_weights()) 
+# new_audio_model.layers[23].set_weights(model.layers[28].get_weights()) 
+# new_audio_model.layers[24].set_weights(model.layers[30].get_weights())
+# new_audio_model.layers[25].set_weights(model.layers[32].get_weights())
+# new_audio_model.layers[26].set_weights(model.layers[35].get_weights())
+# new_audio_model.layers[27].set_weights(model.layers[37].get_weights())
+# new_audio_model.layers[28].set_weights(model.layers[39].get_weights())
+# new_audio_model.layers[29].set_weights(model.layers[41].get_weights())
+# new_audio_model.layers[30].set_weights(model.layers[43].get_weights())
 
-print(new_audio_model.summary())
+# print(new_audio_model.summary())
  
 
-###############################################################################
-                        # defining the new Visual model #
-###############################################################################
-new_visual_model = Model(inputs=visual_sequence,outputs=out_visual)
+# ###############################################################################
+#                         # defining the new Visual model #
+# ###############################################################################
+# new_visual_model = Model(inputs=visual_sequence,outputs=out_visual)
  
-new_visual_model.layers[0].set_weights(model.layers[13].get_weights()) # input layer
-new_visual_model.layers[1].set_weights(model.layers[15].get_weights())
-new_visual_model.layers[2].set_weights(model.layers[17].get_weights()) 
-new_visual_model.layers[3].set_weights(model.layers[19].get_weights()) 
-new_visual_model.layers[4].set_weights(model.layers[21].get_weights()) 
-new_visual_model.layers[5].set_weights(model.layers[23].get_weights()) 
-new_visual_model.layers[6].set_weights(model.layers[25].get_weights())
-new_visual_model.layers[7].set_weights(model.layers[27].get_weights())# out visual
+# new_visual_model.layers[0].set_weights(model.layers[18].get_weights()) # input layer
+# new_visual_model.layers[1].set_weights(model.layers[20].get_weights())
+# new_visual_model.layers[2].set_weights(model.layers[22].get_weights()) 
+# new_visual_model.layers[3].set_weights(model.layers[24].get_weights()) 
+# new_visual_model.layers[4].set_weights(model.layers[27].get_weights()) 
+# new_visual_model.layers[5].set_weights(model.layers[29].get_weights()) 
+# new_visual_model.layers[6].set_weights(model.layers[31].get_weights())
+# new_visual_model.layers[7].set_weights(model.layers[33].get_weights())
+# new_visual_model.layers[8].set_weights(model.layers[34].get_weights())
+# new_visual_model.layers[9].set_weights(model.layers[36].get_weights())
+# new_visual_model.layers[10].set_weights(model.layers[38].get_weights())
+# new_visual_model.layers[11].set_weights(model.layers[40].get_weights())
+# new_visual_model.layers[12].set_weights(model.layers[42].get_weights())
 
-print(new_visual_model.summary())
+# print(new_visual_model.summary())
 
 ###############################################################################
 
@@ -324,25 +374,25 @@ model.save_weights(modeldir + 'epoch0'  + '_weights.h5')
 
 ################################################################################ Finding Recall #
 
-audio_embeddings = new_audio_model.predict(X_val) 
-visual_embeddings = new_visual_model.predict(Y_val)
+# audio_embeddings = new_audio_model.predict(X_val) 
+# visual_embeddings = new_visual_model.predict(Y_val)
 
-# average embedding over data direction  (SISA)        
-audio_embeddings = numpy.mean(audio_embeddings, axis = 1) 
-visual_embeddings = numpy.mean(visual_embeddings, axis = 1)
+# # average embedding over data direction  (SISA)        
+# audio_embeddings = numpy.mean(audio_embeddings, axis = 1) 
+# visual_embeddings = numpy.mean(visual_embeddings, axis = 1)
 
-poolsize =  1000
-recall_vec = calculate_recallat10( audio_embeddings,visual_embeddings, 50,  number_of_audios , poolsize )
+# poolsize =  1000
+# recall_vec = calculate_recallat10( audio_embeddings,visual_embeddings, 50,  number_of_audios , poolsize )
 
-recall10 = numpy.mean(recall_vec)/(poolsize)
-print('###############################################################...recall@10 is = ' + str(recall10) )       
-allavRecalls.append(recall10) 
-
+# recall10 = numpy.mean(recall_vec)/(poolsize)
+# print('###############################################################...recall@10 is = ' + str(recall10) )       
+# allavRecalls.append(recall10) 
+# del audio_embeddings
+# del visual_embeddings
 ################################################################################ deleting validation data    
 del Y_val
 del X_val
-del audio_embeddings
-del visual_embeddings
+
 
 for epoch in range(2):
       
@@ -418,31 +468,31 @@ for epoch in range(2):
             valorderX,valorderY = randOrder(Y_val.shape[0])
             bin_val_triplet = numpy.array(make_bin_target(Y_val.shape[0]))
             print('......................... chunk validation .................................' + str(chunk_val))    
-            val_chunk = model.evaluate( [Y_val[valorderY],X_val[valorderX] ],bin_val_triplet,batch_size=120)     
+            val_chunk = model.evaluate( [Y_val[valorderY],X_val[valorderX] ],bin_val_triplet,batch_size=60)     
   
             epoch_cum_val += val_chunk           
             
             ###############################################################################
                         # Finding Recall #
             ###############################################################################
-            audio_embeddings = new_audio_model.predict(X_val) 
-            visual_embeddings = new_visual_model.predict(Y_val)
+            # audio_embeddings = new_audio_model.predict(X_val) 
+            # visual_embeddings = new_visual_model.predict(Y_val)
             
-            audio_embeddings = numpy.mean(audio_embeddings, axis = 1) 
-            visual_embeddings = numpy.mean(visual_embeddings, axis = 1)
+            # audio_embeddings = numpy.mean(audio_embeddings, axis = 1) 
+            # visual_embeddings = numpy.mean(visual_embeddings, axis = 1)
             
-            poolsize =  1000
-            recall_vec = calculate_recallat10( audio_embeddings,visual_embeddings, 50,  number_of_audios , poolsize )
+            # poolsize =  1000
+            # recall_vec = calculate_recallat10( audio_embeddings,visual_embeddings, 50,  number_of_audios , poolsize )
         
-            recall10 = numpy.mean(recall_vec)/(poolsize)
+            # recall10 = numpy.mean(recall_vec)/(poolsize)
             
-            epoch_cum_recall += recall10  
-             
+            # epoch_cum_recall += recall10  
+            # del audio_embeddings
+            # del visual_embeddings 
             ###############################################################################
             del Y_val,X_val 
             
-            del audio_embeddings
-            del visual_embeddings
+            
             ###############################################################################
             ############################################################################### saving the best model
          

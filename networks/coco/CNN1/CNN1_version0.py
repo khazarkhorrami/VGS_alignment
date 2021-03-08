@@ -1,7 +1,7 @@
 # MISA with layer normalization, m = 0.1
+graph_title  = 'DaveNet model with m = 0.1'
 
 import tensorflow as tf
-
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = False
 config.gpu_options.per_process_gpu_memory_fraction=0.7
@@ -125,13 +125,13 @@ allepochs_valloss = []
 allepochs_trainloss = []
 allavRecalls = []
 ############################################################################### for using previously trained model
-#model.load_weights(modeldir + 'model_weights.h5')
+model.load_weights(modeldir + 'model_weights.h5')
 
-# data = scipy.io.loadmat(modeldir + 'valtrainloss.mat' , variable_names=['allepochs_valloss','allepochs_trainloss','allavRecalls'])
-# allepochs_valloss = data['allepochs_valloss'] 
-# allepochs_trainloss = data['allepochs_trainloss'] 
-# allavRecalls = data['allavRecalls']
-
+data = scipy.io.loadmat(modeldir + 'valtrainloss.mat' , variable_names=['allepochs_valloss','allepochs_trainloss','allavRecalls'])
+allepochs_valloss = data['allepochs_valloss'][0]
+allepochs_trainloss = data['allepochs_trainloss'][0]
+allavRecalls = data['allavRecalls'][0]
+kh
 
 ###############################################################################
                       # Custom loss function #
@@ -530,55 +530,31 @@ print(numpy.max(out_visual_output))
 
 
 
-layer_name = 'conv5'  
-intermediate_layer_model = Model(inputs=model.input,outputs=model.get_layer(layer_name).output)
-out_temp = intermediate_layer_model.predict([Y_val,X_val])
-out_temp = numpy.reshape(out_temp , -1)
-print(numpy.min(out_temp))
-print(numpy.max(out_temp))
+# layer_name = 'conv5'  
+# intermediate_layer_model = Model(inputs=model.input,outputs=model.get_layer(layer_name).output)
+# out_temp = intermediate_layer_model.predict([Y_val,X_val])
+# out_temp = numpy.reshape(out_temp , -1)
+# print(numpy.min(out_temp))
+# print(numpy.max(out_temp))
 # .............................................................................
 
+from matplotlib import pyplot as plt
 #modeldir = '/worktmp/khorrami/work/projects/project_2/outputs/step_4/models/test/version1/'
-import scipy.io
-import numpy
-trainval = scipy.io.loadmat(modeldir+'valtrainloss.mat',variable_names= {'allepochs_valloss','allepochs_trainloss'}) 
-   
-import matplotlib as plt
-plt.pyplot.figure(figsize=(28,18))
+plt.figure()
+plt.subplot(1,2,1)   
+plt.plot(allepochs_trainloss, label = 'train')
+plt.plot(allepochs_valloss, label ='validation')
 
-fig, ax = plt.pyplot.subplots()
+plt.grid()
+plt.title(graph_title)
+plt.legend()
 
-var = trainval['allepochs_trainloss'][0]
-number_of_trained_epochs = int(len(var) / 15)
-average_loss = []
-for item in numpy.arange(number_of_trained_epochs ):    
-    temp = var[item*15 : (item+1)*15]
-    average_loss.append(numpy.mean(temp))
-average_loss_train = average_loss    
- 
-var = trainval['allepochs_valloss'][0]
-number_of_trained_epochs = int(len(var) / 15)
-average_loss = []
-for item in numpy.arange(number_of_trained_epochs ):    
-    temp = var[item*15 : (item+1)*15]
-    average_loss.append(numpy.mean(temp))
-average_loss_val = average_loss  
-   
-ax.plot(average_loss_train, label = 'train')
-ax.plot(average_loss_val, label ='validation')
-plt.pyplot.yticks(numpy.arange(0,2,0.1))
-plt.pyplot.xticks(numpy.arange(0,number_of_trained_epochs ,2), fontsize=8)
-plt.pyplot.grid()
-plt.pyplot.title(' DAVEnet model (CNN0) with Adam (lr=1e-4)')
-ax.legend()
-
-plt.pyplot.savefig(modeldir+'loss_plot',format='pdf')
-
-
-
-
-
-
+plt.subplot(1,2,2)   
+plt.plot(allavRecalls, label = 'validation recall')
+plt.grid()
+plt.title('speech to image recall')
+plt.legend()
+plt.savefig(modeldir+'loss_plot',format='pdf')
 
 
 

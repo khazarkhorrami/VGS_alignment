@@ -1,5 +1,5 @@
 # MISA with batch normalization removed from early layers, m = 0.1
-
+graph_title = 'misa without batchnorm '
 import tensorflow as tf
 
 config = tf.ConfigProto()
@@ -47,28 +47,32 @@ Y_shape = (14,14,512)
 audio_sequence = Input(shape=X_shape)
 
 # layer 1
-
+# 65 ms
 forward1 = Conv1D(128,5,padding="same",activation=activation_C,name = 'conv1')(audio_sequence)
 dr1 = Dropout(dropout_size)(forward1)
 
 
 # layer 2
+# 165 ms
 forward2 = Conv1D(256,11,padding="same",activation=activation_C,name = 'conv2')(dr1)
 dr2 = Dropout(dropout_size)(forward2) 
 pool2 = MaxPooling1D(3,strides = 2, padding='same')(dr2)
 
 # layer 3
+# 525 ms (word/syllable)
 forward3 = Conv1D(256,17,padding="same",activation=activation_C,name = 'conv3')(pool2)
 dr3 = Dropout(dropout_size)(forward3)
- 
+# 565 ms 
 pool3 = MaxPooling1D(3,strides = 2,padding='same')(dr3)
 
 # layer 4
+# 1245 ms (phrase)
 forward4 = Conv1D(512,17,padding="same",activation=activation_C,name = 'conv4')(pool3)
 dr4 = Dropout(dropout_size)(forward4)
 pool4 = MaxPooling1D(3,strides = 2,padding='same')(dr4)
 
 # layer 5
+# 2685 ms
 forward5 = Conv1D(512,17,padding="same",activation=activation_C,name = 'conv5')(pool4)
 dr5 = Dropout(dropout_size)(forward5)
 bn5 = BatchNormalization(axis=-1,name='audio_branch')(dr5) 
@@ -522,49 +526,31 @@ print(numpy.max(out_visual_output))
 
 
 
-layer_name = 'conv5'  
-intermediate_layer_model = Model(inputs=model.input,outputs=model.get_layer(layer_name).output)
-out_temp = intermediate_layer_model.predict([Y_val,X_val])
-out_temp = numpy.reshape(out_temp , -1)
-print(numpy.min(out_temp))
-print(numpy.max(out_temp))
+# layer_name = 'conv5'  
+# intermediate_layer_model = Model(inputs=model.input,outputs=model.get_layer(layer_name).output)
+# out_temp = intermediate_layer_model.predict([Y_val,X_val])
+# out_temp = numpy.reshape(out_temp , -1)
+# print(numpy.min(out_temp))
+# print(numpy.max(out_temp))
 # .............................................................................
 
+from matplotlib import pyplot as plt
 #modeldir = '/worktmp/khorrami/work/projects/project_2/outputs/step_4/models/test/version1/'
-import scipy.io
-import numpy
-trainval = scipy.io.loadmat(modeldir+'valtrainloss.mat',variable_names= {'allepochs_valloss','allepochs_trainloss'}) 
-   
-import matplotlib as plt
-plt.pyplot.figure(figsize=(28,18))
+plt.figure()
+plt.subplot(1,2,1)   
+plt.plot(allepochs_trainloss, label = 'train')
+plt.plot(allepochs_valloss, label ='validation')
 
-fig, ax = plt.pyplot.subplots()
+plt.grid()
+plt.title(graph_title)
+plt.legend()
 
-var = trainval['allepochs_trainloss'][0]
-number_of_trained_epochs = int(len(var) / 15)
-average_loss = []
-for item in numpy.arange(number_of_trained_epochs ):    
-    temp = var[item*15 : (item+1)*15]
-    average_loss.append(numpy.mean(temp))
-average_loss_train = average_loss    
- 
-var = trainval['allepochs_valloss'][0]
-number_of_trained_epochs = int(len(var) / 15)
-average_loss = []
-for item in numpy.arange(number_of_trained_epochs ):    
-    temp = var[item*15 : (item+1)*15]
-    average_loss.append(numpy.mean(temp))
-average_loss_val = average_loss  
-   
-ax.plot(average_loss_train, label = 'train')
-ax.plot(average_loss_val, label ='validation')
-plt.pyplot.yticks(numpy.arange(0,2,0.1))
-plt.pyplot.xticks(numpy.arange(0,number_of_trained_epochs ,2), fontsize=8)
-plt.pyplot.grid()
-plt.pyplot.title(' DAVEnet model (CNN0) with Adam (lr=1e-4)')
-ax.legend()
-
-plt.pyplot.savefig(modeldir+'loss_plot',format='pdf')
+plt.subplot(1,2,2)   
+plt.plot(allavRecalls, label = 'validation recall')
+plt.grid()
+plt.title('speech to image recall')
+plt.legend()
+plt.savefig(modeldir+'loss_plot',format='pdf')
 
 
 

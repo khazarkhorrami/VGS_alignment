@@ -93,7 +93,7 @@ out_visual_channel = Reshape([196,512],name='reshape_visual')(bn_visual)
 
 ###############################################################################  Attention I 
 # which part of image gets more attention based on audio query.
-
+kh
 keyImage = out_visual_channel
 valueImage = out_visual_channel
 queryAudio = out_audio_channel

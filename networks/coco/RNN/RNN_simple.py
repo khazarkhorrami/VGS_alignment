@@ -1,6 +1,5 @@
-# MISA with layer normalization, m = 0.1
-graph_title  = 'DaveNet model with m = 0.1'
-
+# MISA with batch normalization removed from early layers, m = 0.1
+graph_title = 'misa without batchnorm '
 import tensorflow as tf
 
 config = tf.ConfigProto()
@@ -12,7 +11,7 @@ machine_path = '/worktmp/hxkhkh/'
 #machine_path = '/worktmp/khorrami/'
 #machine_path = '/scratch/hxkhkh/'
 
-modeldir = machine_path +  'project2/current/outputs/models/coco/CNN0/v3/'
+modeldir = machine_path +  'project2/current/outputs/models/coco/RNN/simple/'
 datadir = machine_path +  'features/coco/old/threechunks/'
 ###############################################################################
 # The main code starts here
@@ -32,7 +31,7 @@ from keras.layers import Lambda
 
 from keras.models import Model
 from keras.layers import  Input, Reshape, Dense, Dropout, BatchNormalization
-from keras.layers import  MaxPooling1D,  Conv1D,Conv2D
+from keras.layers import  MaxPooling1D,  Conv1D,Conv2D, LSTM, TimeDistributed
 from keras.layers import Softmax, Permute, AveragePooling1D, Concatenate
 dropout_size = 0.3
 #output_visual_size = numpy.shape(Y)[1]
@@ -45,43 +44,57 @@ Y_shape = (14,14,512)
 
 
 #.............................................................................. Audio Network
+from keras.layers.merge import add
+
+def make_residual_lstm_layers(Myinput, rnn_width, rnn_depth, rnn_dropout):
+    """
+    The intermediate LSTM layers return sequences, while the last returns a single element.
+    The input is also a sequence. In order to match the shape of input and output of the LSTM
+    to sum them we can do it only for all layers but the last.
+    """
+    x = Myinput
+    for i in range(rnn_depth):
+        return_sequences = i < rnn_depth - 1
+        x_rnn = LSTM(rnn_width, activation='tanh', recurrent_dropout=rnn_dropout, dropout=0.1, return_sequences=return_sequences)(x)#(Recurrent 1)
+        print(x_rnn.shape)
+        if return_sequences:
+            # Intermediate layers return sequences, input is also a sequence.
+            if i > 0 or Myinput.shape[-1] == rnn_width:
+                x = add([x, x_rnn])
+            else:
+                # Note that the input size and RNN output has to match, due to the sum operation.
+                # If we want different rnn_width, we'd have to perform the sum from layer 2 on.
+                x = x_rnn
+        else:
+            # Last layer does not return sequences, just the last element
+            # so we select only the last element of the previous output.
+            def slice_last(x):
+                return x[..., -1, :]
+            x = add([Lambda(slice_last)(x), x_rnn]) # recurren 1 + input
+    return x
+
+#.............................................................................. Audio Network
+
 audio_sequence = Input(shape=X_shape)
 
-# layer 1
-# 65 ms
-forward1 = Conv1D(128,5,padding="same",activation=activation_C,name = 'conv1')(audio_sequence)
-dr1 = Dropout(dropout_size)(forward1)
-bn1 = BatchNormalization(axis=-1)(dr1)
+# layer 1: 60 ms 
+forward1 = Conv1D(128,5,strides = 2, padding="same",activation=activation_C)(audio_sequence) 
+dr1 = Dropout(0.1)(forward1)
 
-# layer 2
-# 165 ms
-forward2 = Conv1D(256,11,padding="same",activation=activation_C,name = 'conv2')(bn1)
-dr2 = Dropout(dropout_size)(forward2)
-bn2 = BatchNormalization(axis=-1)(dr2)
-#185 ms 
-pool2 = MaxPooling1D(3,strides = 2, padding='same')(bn2)
+forward2 = Conv1D(128,11,strides = 4, padding="same",activation=activation_C)(dr1) 
+dr2 = Dropout(0.1)(forward2)
+#resLSTM = make_residual_lstm_layers(dr1, rnn_width=512, rnn_depth=3, rnn_dropout=0.0)
 
-# layer 3
-# 525 ms (word/syllable)
-forward3 = Conv1D(256,17,padding="same",activation=activation_C,name = 'conv3')(pool2)
-dr3 = Dropout(dropout_size)(forward3)
-bn3 = BatchNormalization(axis=-1)(dr3) 
-# 565 ms
-pool3 = MaxPooling1D(3,strides = 2,padding='same')(bn3)
 
-# layer 4
-# 1245 ms (phrase)
-forward4 = Conv1D(512,17,padding="same",activation=activation_C,name = 'conv4')(pool3)
-dr4 = Dropout(dropout_size)(forward4)
-bn4 = BatchNormalization(axis=-1)(dr4) 
-pool4 = MaxPooling1D(3,strides = 2,padding='same')(bn4)
+# i= 1 
+rec2 = LSTM (512, return_sequences= True)(dr2) # 171, 256
+# i= 2 # 
 
-# layer 5
-# 2685 ms
-forward5 = Conv1D(512,17,padding="same",activation=activation_C,name = 'conv5')(pool4)
-dr5 = Dropout(dropout_size)(forward5)
-bn5 = BatchNormalization(axis=-1,name='audio_branch')(dr5) 
-out_audio_channel = bn5
+rec3 = LSTM (512, return_sequences= True)(rec2) # 171, 256
+#recognizer2 = TimeDistributed(Dense(256))(rec3)
+#norm3 = pool3
+out_audio_channel = rec3
+
 
 #.............................................................................. Visual Network
 
@@ -229,38 +242,38 @@ def calculate_recallat10( audio_embedd,visual_embedd, sampling_times,  number_of
                         # defining the new Audio model #
 ###############################################################################
 
-new_audio_model = Model(inputs=audio_sequence,outputs=out_audio)
+# new_audio_model = Model(inputs=audio_sequence,outputs=out_audio)
 
-for n in range(13):
-    new_audio_model.layers[n].set_weights(model.layers[n].get_weights())
+# for n in range(9):
+#     new_audio_model.layers[n].set_weights(model.layers[n].get_weights())
    
-new_audio_model.layers[13].set_weights(model.layers[14].get_weights())
-new_audio_model.layers[14].set_weights(model.layers[16].get_weights())
-new_audio_model.layers[15].set_weights(model.layers[18].get_weights()) 
-new_audio_model.layers[16].set_weights(model.layers[20].get_weights()) 
-new_audio_model.layers[17].set_weights(model.layers[22].get_weights()) 
-new_audio_model.layers[18].set_weights(model.layers[24].get_weights()) 
-new_audio_model.layers[19].set_weights(model.layers[26].get_weights())
-new_audio_model.layers[20].set_weights(model.layers[28].get_weights()) # out audio
+# new_audio_model.layers[9].set_weights(model.layers[10].get_weights())
+# new_audio_model.layers[10].set_weights(model.layers[12].get_weights())
+# new_audio_model.layers[11].set_weights(model.layers[14].get_weights()) 
+# new_audio_model.layers[12].set_weights(model.layers[16].get_weights()) 
+# new_audio_model.layers[13].set_weights(model.layers[18].get_weights()) 
+# new_audio_model.layers[14].set_weights(model.layers[20].get_weights()) 
+# new_audio_model.layers[15].set_weights(model.layers[22].get_weights())
+# new_audio_model.layers[16].set_weights(model.layers[24].get_weights()) # out audio
 
-print(new_audio_model.summary())
+# print(new_audio_model.summary())
  
 
-###############################################################################
-                        # defining the new Visual model #
-###############################################################################
-new_visual_model = Model(inputs=visual_sequence,outputs=out_visual)
+# ###############################################################################
+#                         # defining the new Visual model #
+# ###############################################################################
+# new_visual_model = Model(inputs=visual_sequence,outputs=out_visual)
  
-new_visual_model.layers[0].set_weights(model.layers[13].get_weights()) # input layer
-new_visual_model.layers[1].set_weights(model.layers[15].get_weights())
-new_visual_model.layers[2].set_weights(model.layers[17].get_weights()) 
-new_visual_model.layers[3].set_weights(model.layers[19].get_weights()) 
-new_visual_model.layers[4].set_weights(model.layers[21].get_weights()) 
-new_visual_model.layers[5].set_weights(model.layers[23].get_weights()) 
-new_visual_model.layers[6].set_weights(model.layers[25].get_weights())
-new_visual_model.layers[7].set_weights(model.layers[27].get_weights())# out visual
+# new_visual_model.layers[0].set_weights(model.layers[9].get_weights()) # input layer
+# new_visual_model.layers[1].set_weights(model.layers[11].get_weights())
+# new_visual_model.layers[2].set_weights(model.layers[13].get_weights()) 
+# new_visual_model.layers[3].set_weights(model.layers[15].get_weights()) 
+# new_visual_model.layers[4].set_weights(model.layers[17].get_weights()) 
+# new_visual_model.layers[5].set_weights(model.layers[19].get_weights()) 
+# new_visual_model.layers[6].set_weights(model.layers[21].get_weights())
+# new_visual_model.layers[7].set_weights(model.layers[23].get_weights())# out visual
 
-print(new_visual_model.summary())
+# print(new_visual_model.summary())
 
 ###############################################################################
 
@@ -324,25 +337,25 @@ model.save_weights(modeldir + 'epoch0'  + '_weights.h5')
 
 ################################################################################ Finding Recall #
 
-audio_embeddings = new_audio_model.predict(X_val) 
-visual_embeddings = new_visual_model.predict(Y_val)
+# audio_embeddings = new_audio_model.predict(X_val) 
+# visual_embeddings = new_visual_model.predict(Y_val)
 
-# average embedding over data direction  (SISA)        
-audio_embeddings = numpy.mean(audio_embeddings, axis = 1) 
-visual_embeddings = numpy.mean(visual_embeddings, axis = 1)
+# # average embedding over data direction  (SISA)        
+# audio_embeddings = numpy.mean(audio_embeddings, axis = 1) 
+# visual_embeddings = numpy.mean(visual_embeddings, axis = 1)
 
-poolsize =  1000
-recall_vec = calculate_recallat10( audio_embeddings,visual_embeddings, 50,  number_of_audios , poolsize )
+# poolsize =  1000
+# recall_vec = calculate_recallat10( audio_embeddings,visual_embeddings, 50,  number_of_audios , poolsize )
 
-recall10 = numpy.mean(recall_vec)/(poolsize)
-print('###############################################################...recall@10 is = ' + str(recall10) )       
-allavRecalls.append(recall10) 
-
+# recall10 = numpy.mean(recall_vec)/(poolsize)
+# print('###############################################################...recall@10 is = ' + str(recall10) )       
+# allavRecalls.append(recall10) 
+# del audio_embeddings
+# del visual_embeddings
 ################################################################################ deleting validation data    
 del Y_val
 del X_val
-del audio_embeddings
-del visual_embeddings
+
 
 for epoch in range(2):
       
@@ -425,24 +438,24 @@ for epoch in range(2):
             ###############################################################################
                         # Finding Recall #
             ###############################################################################
-            audio_embeddings = new_audio_model.predict(X_val) 
-            visual_embeddings = new_visual_model.predict(Y_val)
+            # audio_embeddings = new_audio_model.predict(X_val) 
+            # visual_embeddings = new_visual_model.predict(Y_val)
             
-            audio_embeddings = numpy.mean(audio_embeddings, axis = 1) 
-            visual_embeddings = numpy.mean(visual_embeddings, axis = 1)
+            # audio_embeddings = numpy.mean(audio_embeddings, axis = 1) 
+            # visual_embeddings = numpy.mean(visual_embeddings, axis = 1)
             
-            poolsize =  1000
-            recall_vec = calculate_recallat10( audio_embeddings,visual_embeddings, 50,  number_of_audios , poolsize )
+            # poolsize =  1000
+            # recall_vec = calculate_recallat10( audio_embeddings,visual_embeddings, 50,  number_of_audios , poolsize )
         
-            recall10 = numpy.mean(recall_vec)/(poolsize)
+            # recall10 = numpy.mean(recall_vec)/(poolsize)
             
-            epoch_cum_recall += recall10  
-             
+            # epoch_cum_recall += recall10  
+            # del audio_embeddings
+            # del visual_embeddings 
             ###############################################################################
             del Y_val,X_val 
             
-            del audio_embeddings
-            del visual_embeddings
+            
             ###############################################################################
             ############################################################################### saving the best model
          
@@ -538,6 +551,7 @@ print(numpy.max(out_visual_output))
 # print(numpy.min(out_temp))
 # print(numpy.max(out_temp))
 # .............................................................................
+
 from matplotlib import pyplot as plt
 #modeldir = '/worktmp/khorrami/work/projects/project_2/outputs/step_4/models/test/version1/'
 plt.figure()
