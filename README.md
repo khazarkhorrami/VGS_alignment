@@ -1,3 +1,3 @@
 # SI_alignment
-Audio-Visual alignment analysis in an attention-based VGS model
+Audio-Visual alignment analysis in an cross-modal attention -based VGS model
 
