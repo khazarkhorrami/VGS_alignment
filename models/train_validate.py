@@ -3,7 +3,7 @@ import scipy.io
 import scipy.spatial as ss
 
 from prepare_train_validation_data import prepare_triplet_data
-from CNN0_sisa import build_vgsmodel, build_audiomodel, build_visualmodel
+from CNNatt import build_vgsmodel, build_audiomodel, build_visualmodel
 
 def calculate_recallat10( embedding_1,embedding_2, sampling_times, number_of_all_audios, pool):   
     recall_all = []
