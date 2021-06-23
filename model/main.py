@@ -73,9 +73,7 @@ if __name__ == '__main__':
                 save_model(vgs_model , modeldir, val_indicator,recall_indicator , save_best_loss , save_best_recall , epoch_valloss , epoch_recall_av, epoch_recall_va )
                 scipy.io.savemat(modeldir + 'valtrainloss.mat', 
                          {'allepochs_valloss':allepochs_valloss,'allepochs_trainloss':allepochs_trainloss,'all_avRecalls':all_avRecalls,'all_vaRecalls':all_vaRecalls })
-   
-                
-        vgs_model.save_weights('%smodel_weights_lastepoch.h5' % modeldir)        
+           
         print ('............................................    validation_loss at this epoch =    ' + str(epoch_valloss))
         print ('............................................    recall_av at this epoch =    ' + str(epoch_recall_av))
         print ('............................................    recall_va at this epoch =    ' + str(epoch_recall_va))
