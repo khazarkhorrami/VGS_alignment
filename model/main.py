@@ -1,4 +1,6 @@
-     
+import scipy.io
+from  train_validate import initialize_model, save_model , train_model, evaluate_model
+
 ###################### initial configuration  #################################
 
 model_name = 'CNNatt'
@@ -24,24 +26,12 @@ set_of_validation_files = ['train_ch8']
 length_sequence = 512
 Xshape = (length_sequence,40)
 Yshape = (14,14,512)
-    
-###############################################################################
-
-import tensorflow as tf
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = False
-config.gpu_options.per_process_gpu_memory_fraction=0.7
-sess = tf.Session(config=config)
-
-import scipy.io
-from  train_validate import initialize_model, save_model , train_model, evaluate_model
-
 if model_name == 'CNNatt':
     from CNNatt import build_vgsmodel
 elif model_name == 'CNN0':   
-    from CNN0 import build_vgsmodel
+    from CNN0 import build_vgsmodel 
 
-
+###############################################################################
 
 if __name__ == '__main__':
 
