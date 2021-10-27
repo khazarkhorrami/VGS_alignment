@@ -5,8 +5,8 @@
 paths = {
   "model_name": "CNNatt",
   "model_subname": "v0",
-  "modeldir": "/.../project_2/models/test/",
-  "featuredir": "/.../features/coco/SPOKEN-COCO/train/",
+  "modeldir": "../project_2/models/test/",
+  "featuredir": "../features/coco/SPOKEN-COCO/train/",
   "visual_feature_name" : "vggb5conv3_",
   "audio_feature_name" : "logmel_"
 }
