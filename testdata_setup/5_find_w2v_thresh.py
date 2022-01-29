@@ -24,6 +24,8 @@ import numpy
 import scipy.io
 
 from nltk.tokenize import wordpunct_tokenize
+import smart_open
+smart_open.open = smart_open.smart_open
 from gensim.models import KeyedVectors
 
 model = KeyedVectors.load_word2vec_format('/.../GoogleNews-vectors-negative300.bin', binary=True)

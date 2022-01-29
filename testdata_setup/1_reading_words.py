@@ -2,8 +2,6 @@
 # 1. words data is extracted
 # 2. words with t >512 are removed
 # 3. all words are zeropadded
-
-
 import numpy
 import scipy,scipy.io
 
@@ -51,7 +49,7 @@ wavfile_frame_lengths = [int (numpy.ceil(item * win_hop_time)) for item in wavfi
 number_of_all_utterances = len(wavfile_frame_lengths)
 index_long_utterances = [counter for counter, value in enumerate(wavfile_frame_lengths) if value > len_of_longest_sequence]
 
-################################################################################  converting time (ms) to frame
+################################################################################  converting onset time (ms) to frame
     
 wavfile_onsets = [numpy.ceil(utterance/10) for utterance in wavfile_onsets]        
 wavfile_offsets = [numpy.ceil(utterance/10) for utterance in wavfile_offsets]
