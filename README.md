@@ -51,6 +51,7 @@ The training and validation losses as well as validation recalls at each epoch a
 
 ## testdata_setup
 
-As for test data, validation set of MSCOCO and SPEECH-COCO data are used. The data is processed in 6 steps. 
+As for test data, validation set of MSCOCO and SPEECH-COCO are used. The data is processed in 6 successive steps. Output of each step is used in next step/steps. So, you may want to run the codes in same order. At last step, testdata nouns are obtained as a set of object labels and saved along with their timestamps.
+
 
 ## scores
