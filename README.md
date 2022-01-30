@@ -24,3 +24,12 @@ conda install -c anaconda nltk
 
 conda install -c anaconda gensim
 
+The code consists of following folders:
+
+# features_extraction
+
+# model
+
+# testdata_setup
+
+# scores
