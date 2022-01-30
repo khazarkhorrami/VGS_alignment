@@ -221,13 +221,16 @@ if __name__ == '__main__':
     path_in_AVtensor = os.path.join(path_in,'tensors')
     file_in_AVtensor = ''
     
-    file_in_metadata = 'processed_data_list_val.mat'
+    path_in_metadata = "../../testdata/0/"
+    file_in_metadata = 'processed_data_list.mat'
+    
+    path_in_corrected_ind = "../../testdata/3/"
     file_in_corrected_ind = 'corrected_nouns_index.mat'
     
-    path_in_labels = os.path.join(path_project , '/')
+    path_in_labels = "../../testdata/4/"
     file_in_labels = 'unified_labels.mat'
     
-    path_in_processed_nouns = os.path.join(path_project , '/')
+    path_in_processed_nouns = "../../testdata/6/"
     file_in_processed_nouns = 'sub_labels.mat'
     
     find_GS = False
@@ -255,11 +258,11 @@ if __name__ == '__main__':
     scale_h = int(res_target_h /res_source_h)
     scale_w = int(res_target_w /res_source_w)
     
-    file_indices = os.path.join(path_in,file_in_corrected_ind) 
+    file_indices = os.path.join(path_in_corrected_ind , file_in_corrected_ind) 
     file_AVtensor = os.path.join(path_in_AVtensor , file_in_AVtensor + '.mat') 
-    file_metadata = os.path.join(path_in,file_in_metadata)
-    file_nouns = os.path.join(path_in,file_in_processed_nouns) 
-    file_labels = os.path.join(path_in,file_in_labels)
+    file_metadata = os.path.join(path_in_metadata , file_in_metadata)
+    file_nouns = os.path.join(path_in_processed_nouns , file_in_processed_nouns) 
+    file_labels = os.path.join(path_in_labels , file_in_labels)
     
     
     ###############################################################################
