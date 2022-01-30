@@ -29,10 +29,9 @@ conda install -c anaconda nltk
 
 conda install -c anaconda gensim
 
-To run the code, you need to first download MSCOCO and SPEECH-COCO datasets and store them in "../data" folder.
+To train the model, you need to first download MSCOCO and SPEECH-COCO datasets and store them in "../data" folder.
 
-For preparing test data for "alignment scores", you need to download "GoogleNews-vectors-negative300.bin" model and store it in "../data" folder.
-
+To run "testdata_setup", you need to download "GoogleNews-vectors-negative300.bin" model and store it in "../data" folder.
 
 ## features_extraction
 
