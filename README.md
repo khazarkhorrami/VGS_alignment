@@ -30,6 +30,7 @@ conda install -c anaconda gensim
 ## features_extraction
 
 "extract_audio_features.py" extracts log mel-band energis for spoken captions.
+
 "extract_visual_features.py" extracts vgg16 features for images.
 
 ## model
