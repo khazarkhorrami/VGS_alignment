@@ -9,7 +9,7 @@ import os
 from pycocotools.coco import COCO
 import pylab
 pylab.rcParams['figure.figsize'] = (8.0, 10.0)
-dataDir='/.../data/coco/MSCOCO/'
+dataDir='../../data/coco/MSCOCO/'
 dataType='val2014'
 annFile='{}/annotations/instances_{}.json'.format(dataDir,dataType)
 anncaptionFile = '{}/annotations/captions_{}.json'.format(dataDir,dataType)
