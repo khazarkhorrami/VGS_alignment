@@ -1,26 +1,32 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
-This file reads data file names from SPEECHCOCO and MSCOCO directories,
-and stores names of images and corresponding spoken captions files in a .mat file.
+
+This file reads data file names from SPEECHCOCO and MSCOCO data directories,
+and does the following :
+    1) function "processing_data_list" stores names of images and c
+    orresponding spoken captions files in 'processed_data_list.mat' file.
+    
+    2) function "reading_word_onsets" reads onset of words and stotres them in
+    'word_onsets.mat' file.
 
 """
+
+###############################################################################
 
 import os
 import scipy,scipy.io
 import numpy as np
 import json
 
-
+###############################################################################
 
 images_path = "../../data/MSCOCO/val2014/val2014"
 speech_path = "../../data/SPEECH-COCO/val2014/val2014/wav"
 json_path = '../../data/SPEECH-COCO/val2014/val2014/json'
 
-ouput_path = "../../testdata/0/"
-os.makedirs(ouput_path, exist_ok=1)
+path_out = "../../testdata/0/"
 
+###############################################################################
 
 def processing_data_list():
     
@@ -72,14 +78,13 @@ def processing_data_list():
     image_ids = np.array(image_ids, dtype=np.object)
     list_of_images = np.array(list_of_images, dtype=np.object)
     list_of_wav_files = np.array(list_of_wav_files, dtype=np.object)
-    scipy.io.savemat(ouput_path + 'processed_data_list.mat',
+    scipy.io.savemat(path_out + 'processed_data_list.mat',
                      {'list_of_wav_files':list_of_wav_files,'list_of_wav_counts':list_of_wav_counts,
                       'list_of_images':list_of_images,'image_id_all':image_ids})    
     return wav_files
 
 
-######################### reading word onsets from json files
-
+# reading word onsets from json files
 def reading_word_onsets (wav_files):
     wavfile_names = []
     wavfile_caption = []
@@ -124,7 +129,7 @@ def reading_word_onsets (wav_files):
      
     #...................... saving the results ....................................
           
-    scipy.io.savemat(ouput_path + 'validation_onsets.mat',
+    scipy.io.savemat(path_out + 'word_onsets.mat',
                  mdict={'wavfile_names':wavfile_names,'wavfile_caption':wavfile_caption,'wavfile_duration':wavfile_duration,
                         'wavfile_words':wavfile_words,'wavfile_words_onsets':wavfile_words_onsets, 'wavfile_words_offsets':wavfile_words_offsets}) 
     
@@ -132,6 +137,8 @@ def reading_word_onsets (wav_files):
     
     
 if __name__ == '__main__':
+    
+    os.makedirs(path_out, exist_ok=1)
     # to obtain and save wave file names (speech files)
     wav_file_names = processing_data_list()
     # to extract word onsets for given wave files (speech files)
