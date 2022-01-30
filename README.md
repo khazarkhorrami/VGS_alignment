@@ -55,3 +55,7 @@ As for test data, validation set of MSCOCO and SPEECH-COCO are used. The data is
 
 
 ## scores
+
+This path includes functions needed to measure alignment and glancing scores as described in the paper.
+
+
