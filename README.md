@@ -47,7 +47,7 @@ To run "testdata_setup", you need to download "GoogleNews-vectors-negative300.bi
 ## model
 
 This folder contains all the python files needed for training, validation, and testing the various model versions.
-The training and validation losses and recalls at each epoch are saved as 'valtrainloss.mat'.
+The training and validation losses as well as validation recalls at each epoch are saved as 'valtrainloss.mat'.
 
 ## testdata_setup
 
