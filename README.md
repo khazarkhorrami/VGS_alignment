@@ -26,6 +26,8 @@ conda install -c anaconda nltk
 
 conda install -c anaconda gensim
 
+To run the code, you need to first download MSCOCO and SPEECH-COCO datasets and store them in ../data folder.
+
 
 ## features_extraction
 
