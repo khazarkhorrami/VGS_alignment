@@ -51,4 +51,6 @@ The training and validation losses as well as validation recalls at each epoch a
 
 ## testdata_setup
 
+As for test data, validation set of MSCOCO and SPEECH-COCO data are used. The data is processed in 6 steps. 
+
 ## scores
