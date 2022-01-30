@@ -8,7 +8,7 @@ Link to the paper: https://arxiv.org/pdf/2108.02562.pdf
 
 ## Implementation details
 
-All code is developed in keras using Tensorflow 1.15.0. Example Anaconda environment can be prepared as below:
+All code is developed and tested in keras using Tensorflow 1.15.0. Example Anaconda environment can be prepared as below:
 
 conda create --name VGSalignment python=3.7
 
