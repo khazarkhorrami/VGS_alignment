@@ -9,11 +9,18 @@ Link to the paper: https://arxiv.org/pdf/2108.02562.pdf
 All code is developed in keras using Tensorflow 1.15.0.
 
 conda create --name VGSalignment python=3.7
+
 source activate VGSalignment
+
 conda install -c anaconda tensorflow-gpu=1.15.0
+
 conda install -c anaconda spyder
+
 conda install -c conda-forge librosa
+
 pip install opencv-python
+
 conda install -c anaconda nltk
+
 conda install -c anaconda gensim
 
