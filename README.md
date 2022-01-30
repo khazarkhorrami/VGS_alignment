@@ -26,11 +26,16 @@ conda install -c anaconda nltk
 
 conda install -c anaconda gensim
 
-The code consists of following folders:
 
 ## features_extraction
 
+"extract_audio_features.py" extracts log mel-band energis for spoken captions.
+"extract_visual_features.py" extracts vgg16 features for images.
+
 ## model
+
+This folder contains all the python files needed for training, validation, and testing the various model versions.
+The training and validation losses and recalls at each epoch are saved as 'valtrainloss.mat'.
 
 ## testdata_setup
 
