@@ -40,7 +40,7 @@ To run "testdata_setup", you need to download "GoogleNews-vectors-negative300.bi
 
 ## features_extraction
 
-This folder contains all necessary functions for reading data, extracting audio and visual features and saving them to "../feature" folder after shuffling and chunking features. The output features (provided in chunks) are then served to model training and validation by indicating their names in corresponding configuration file.  
+This folder contains all necessary functions for reading data, extracting audio and visual features and saving them to "../feature" folder after shuffling and chunking features. The output features (provided in chunks) are then served to model training and validation by indicating their names ("set_of_train_files" and "set_of_validation_files" ) in model configuration script.  
 
 "extract_audio_features.py" extracts log mel-band energis for spoken captions.
 
