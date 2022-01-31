@@ -58,6 +58,6 @@ As for test data, validation set of MSCOCO and SPEECH-COCO are used. The data is
 
 This path includes functions needed to measure alignment and glancing scores as described in the paper.
 
-Before run the code for score measurements, hidden layer weights (i.e., AudioVisual-tensor, e.g. example_tensor.mat) must be obtained and saved under the folder "../model/AVtensors" as an array of dimensions (N_samples ,time_frames, pixel_h*pixel_w). 
+Before running the code for score measurements, hidden layer weights (i.e., AudioVisual-tensor, e.g. example_tensor.mat) must be obtained and saved under the folder "../model/AVtensors" as an array of dimensions (N_samples ,time_frames, pixel_h*pixel_w). 
 
 
