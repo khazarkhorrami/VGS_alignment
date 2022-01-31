@@ -46,5 +46,5 @@ training_params = [ number_of_captions_per_image,  length_sequence ]
 validation_params = [ find_recall, save_best_recall ]
 action_parameters = [ number_of_epochs , training_mode, evaluating_mode, saveing_mode ]
 
-example_instance = train_validate (model_name, model_subname, input_dim, model_dir, feature_dir, feature_name, training_chunks, validation_chunks, training_params, validation_params, action_parameters, use_pretrained )    
-example_instance()  
+run_training_and_validation = train_validate (model_name, model_subname, input_dim, model_dir, feature_dir, feature_name, training_chunks, validation_chunks, training_params, validation_params, action_parameters, use_pretrained )    
+run_training_and_validation()  
