@@ -4,12 +4,12 @@ import numpy
 
 def find_glancing_scores(files,parameters_1, parameters_2):
     
-    [file_indices,file_metadata,file_nouns,file_AVtensor,path_output] = files 
+    [file_indices,file_metadata,file_labels,file_nouns,file_AVtensor,path_output] = files 
     [softmax,n_categories] = parameters_1 
     [res_target_h,res_target_w,res_target_t,res_source_h,res_source_w,res_source_t] = parameters_2
     
     
-    tensor_input, number_of_images, all_image_ids, all_inds, all_nouns,all_onsets, all_offsets, all_reference_names = get_input_vectors (file_indices, file_AVtensor, file_metadata, file_nouns)
+    tensor_input, number_of_images, all_image_ids, all_inds, all_nouns,all_onsets, all_offsets, all_reference_names = get_input_vectors (file_indices, file_metadata, file_labels,  file_nouns, file_AVtensor)
     all_OD_scores,all_WD_scores,all_meta_info, allrand_OD_scores, allrand_WD_scores, cm_detection, cm_object_area = initialize_output_vectors (n_categories)  
     tensor_input_SA , tensor_input_TA = prepare_all_tensors (tensor_input, softmax)
     
@@ -112,7 +112,7 @@ def find_glancing_scores(files,parameters_1, parameters_2):
 
 def find_alignment_scores(files,parameters_1, parameters_2):
     
-    [file_indices,file_metadata,file_nouns,file_AVtensor,path_output] = files 
+    [file_indices,file_metadata,file_labels,file_nouns,file_AVtensor,path_output] = files 
     [softmax,n_categories] = parameters_1 
     [res_target_h,res_target_w,res_target_t,res_source_h,res_source_w,res_source_t] = parameters_2
     

@@ -36,7 +36,7 @@ scale_w = int(res_target_w /res_source_w)
 
 if __name__ == '__main__':
 
-    files = [file_indices,file_metadata,file_nouns,file_AVtensor,path_output]
+    files = [file_indices,file_metadata,file_labels,file_nouns,file_AVtensor,path_output]
     parameters_1 = [softmax,n_categories]
     parameters_2 = [res_target_h,res_target_w,res_target_t,res_source_h,res_source_w,res_source_t]
     
