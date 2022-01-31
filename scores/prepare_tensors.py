@@ -9,7 +9,7 @@ def get_input_vectors (file_indices, file_AVtensor, file_metadata, file_nouns):
     ind_accepted = data['ind_accepted'][0]
     number_of_images = len(ind_accepted)
     #.....................
-    
+    # hidden layer weights (AV-tensor) is saved as an of dimensions (N,time_frames, pixel_h*pixel_w) .
     data = scipy.io.loadmat( file_AVtensor , variable_names = ['out_layer'])
     tensor_input = data['out_layer']
     tensor_input = tensor_input [ind_accepted]
