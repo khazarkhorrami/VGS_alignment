@@ -1,11 +1,13 @@
 from prepare_tensors import get_input_vectors, initialize_output_vectors, prepare_all_tensors, prepare_item_tensors,save_results
-from aligning_scores import compute_AS_object , compute_AS_word , compute_AS_object_other , compute_GS_object , compute_GS_word , compute_GS_object_other
+from utils import compute_AS_object , compute_AS_word , compute_AS_object_other , compute_GS_object , compute_GS_word , compute_GS_object_other
 import numpy
-import os
 
-
-
-def find_glancing_scores(file_indices,file_AVtensor,file_metadata,file_nouns,n_categories,softmax):
+def find_glancing_scores(files,parameters_1, parameters_2):
+    
+    [file_indices,file_metadata,file_nouns,file_AVtensor,path_output] = files 
+    [softmax,n_categories] = parameters_1 
+    [res_target_h,res_target_w,res_target_t,res_source_h,res_source_w,res_source_t] = parameters_2
+    
     
     tensor_input, number_of_images, all_image_ids, all_inds, all_nouns,all_onsets, all_offsets, all_reference_names = get_input_vectors (file_indices, file_AVtensor, file_metadata, file_nouns)
     all_OD_scores,all_WD_scores,all_meta_info, allrand_OD_scores, allrand_WD_scores, cm_detection, cm_object_area = initialize_output_vectors (n_categories)  
@@ -101,14 +103,18 @@ def find_glancing_scores(file_indices,file_AVtensor,file_metadata,file_nouns,n_c
                     else:
                         nan_check.append(counter_image)
 
-    filename = path_out + file_out + '_T.mat'
+    filename = path_output + '_GS.mat'
     save_results (filename, all_OD_scores,all_WD_scores,allrand_WD_scores, allrand_OD_scores,cm_detection,cm_object_area)
 
 
 
 
 
-def find_alignment_scores(file_indices,file_AVtensor,file_metadata,file_nouns,n_categories,softmax):
+def find_alignment_scores(files,parameters_1, parameters_2):
+    
+    [file_indices,file_metadata,file_nouns,file_AVtensor,path_output] = files 
+    [softmax,n_categories] = parameters_1 
+    [res_target_h,res_target_w,res_target_t,res_source_h,res_source_w,res_source_t] = parameters_2
     
     tensor_input, number_of_images, all_image_ids, all_inds, all_nouns,all_onsets, all_offsets, all_reference_names = get_input_vectors (file_indices, file_AVtensor, file_metadata, file_nouns)
     all_OD_scores,all_WD_scores,all_meta_info, allrand_OD_scores, allrand_WD_scores, cm_detection, cm_object_area = initialize_output_vectors (n_categories)  
@@ -204,70 +210,7 @@ def find_alignment_scores(file_indices,file_AVtensor,file_metadata,file_nouns,n_
                     else:
                         nan_check.append(counter_image)
 
-    filename = path_out + file_out + '_T.mat'
+    filename = path_output + '_AS.mat'
     save_results (filename, all_OD_scores,all_WD_scores,allrand_WD_scores, allrand_OD_scores,cm_detection,cm_object_area)
-    
-
-if __name__ == '__main__':
-
-    ###################### initial configuration  #################################
-    
-    path_project = ''
-    
-    path_in = os.path.join(path_project , 'input_files')
-    path_out = os.path.join(path_project , 'output_files')
-    
-    
-    path_in_AVtensor = os.path.join(path_in,'tensors')
-    file_in_AVtensor = ''
-    
-    path_in_metadata = "../../testdata/0/"
-    file_in_metadata = 'processed_data_list.mat'
-    
-    path_in_corrected_ind = "../../testdata/3/"
-    file_in_corrected_ind = 'corrected_nouns_index.mat'
-    
-    path_in_labels = "../../testdata/4/"
-    file_in_labels = 'unified_labels.mat'
-    
-    path_in_processed_nouns = "../../testdata/6/"
-    file_in_processed_nouns = 'sub_labels.mat'
-    
-    find_GS = False
-    
-    if find_GS:
-        file_out = 'GS_' + file_in_AVtensor 
-    else:
-        file_out = 'AS_' + file_in_AVtensor 
-    
-    
-    # input parameters  
-    softmax = True
-    
-    n_categories = 80
-    
-    res_target_h = 224    
-    res_target_w = 224
-    res_target_t = 512
-    
-    res_source_h = 14
-    res_source_w = 14
-    res_source_t = 64
-    
-    scale_t = int(res_target_t /res_source_t)
-    scale_h = int(res_target_h /res_source_h)
-    scale_w = int(res_target_w /res_source_w)
-    
-    file_indices = os.path.join(path_in_corrected_ind , file_in_corrected_ind) 
-    file_AVtensor = os.path.join(path_in_AVtensor , file_in_AVtensor + '.mat') 
-    file_metadata = os.path.join(path_in_metadata , file_in_metadata)
-    file_nouns = os.path.join(path_in_processed_nouns , file_in_processed_nouns) 
-    file_labels = os.path.join(path_in_labels , file_in_labels)
-    
-    
-    ###############################################################################
-
-    find_alignment_scores(file_indices,file_AVtensor,file_metadata,file_nouns,n_categories,softmax)
-    find_glancing_scores(file_indices,file_AVtensor,file_metadata,file_nouns,n_categories,softmax)
     
 
