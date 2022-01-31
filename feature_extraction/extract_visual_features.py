@@ -44,14 +44,14 @@ def get_spokencoco_imagenames ( process_train_data , process_val_data , use_shuf
           
         if process_train_data:
             input_images = train_imgs
-            out_file_name = 'train/vggb5conv3_train_ch'
+            out_file_name = 'vggb5conv3_train_ch'
         elif process_val_data:
             input_images = val_imgs
-            out_file_name = 'val/vggb5conv3_val_ch'           
+            out_file_name = 'vggb5conv3_val_ch'           
         vgg_path = feature_path + out_file_name
         
         if use_shuffle_indices:
-            inds_shuffled = numpy.load(feature_path + 'train/shuffle_indices.npy')                  
+            inds_shuffled = numpy.load(feature_path + 'shuffle_indices.npy')                  
             input_images_shuffled = [input_images[item] for item in inds_shuffled]
             del input_images
             input_images = input_images_shuffled

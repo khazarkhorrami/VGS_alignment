@@ -1,8 +1,8 @@
 
 ########################## initial configuration ##############################
 
-data_dir = '/data/'
-feature_dir =  '/features/' 
+data_dir = '../../data/'
+feature_dir =  '../../features/SPOKEN-COCO' 
 
 processing_train_data = False
 processing_val_data = True 
@@ -23,7 +23,7 @@ vgg_layer_name = 'block5_conv3'
 
 ###############################################################################
 
-
+import os
 from extract_audio_features import  get_spokencoco_wavnames, save_chunked_logmels
 from extract_visual_features import get_spokencoco_imagenames, save_chunked_vggs
 from read_file_names import data_chunker
@@ -32,6 +32,8 @@ from read_file_names import data_chunker
 if __name__ == '__main__':
       
     if dataset == 'SPOKEN-COCO':
+        
+        os.makedirs(feature_dir, exist_ok=1)
         # reading image file names
         all_image_files, data_path , output_path = get_spokencoco_imagenames (data_dir , feature_dir , processing_train_data , processing_val_data , using_shuffled_indices)
         # reading wav file names

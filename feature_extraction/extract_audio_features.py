@@ -15,11 +15,11 @@ def get_spokencoco_wavnames ( process_train_data , process_val_data , shuffle_da
           
         if process_train_data:
             input_captions = train_caps
-            out_file_name = 'train/logmel_train_ch'
+            out_file_name = 'logmel_train_ch'
             #shuffle_data = True
         elif process_val_data:
             input_captions = val_caps
-            out_file_name = 'val/logmel_val_ch'
+            out_file_name = 'logmel_val_ch'
             #shuffle_data = False
         logmel_path = feature_path + out_file_name
         
@@ -31,7 +31,7 @@ def get_spokencoco_wavnames ( process_train_data , process_val_data , shuffle_da
             wav_files_shuffled = [wav_files[item] for item in inds_shuffled]
             del wav_files
             wav_files = wav_files_shuffled
-            numpy.save(feature_path + 'train/shuffle_indices' , inds_shuffled)
+            numpy.save(feature_path + 'shuffle_indices' , inds_shuffled)
         
         
         return wav_files, wav_files_count, data_path , logmel_path

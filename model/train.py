@@ -1,3 +1,4 @@
+import os
 import numpy
 import scipy.io
 from matplotlib import pyplot as plt
@@ -126,6 +127,7 @@ class train_validate (VGS):
     
     def save_model(self, vgs_model, initialized_output , training_output, validation_output):
         
+        os.makedirs(self.model_dir, exist_ok=1)
         [allepochs_valloss, allepochs_trainloss, all_avRecalls, all_vaRecalls, val_indicator , recall_indicator ] = initialized_output
         [final_recall_av, final_recall_va , final_valloss] = validation_output 
         [find_recall, save_best_recall]  = self.validation_params
