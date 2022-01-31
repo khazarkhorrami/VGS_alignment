@@ -90,12 +90,8 @@ def get_wav_files (input_captions):
     return wav_files, wav_files_count
 
 
-
-
-
 if __name__ == '__main__':
-    data_dir = '/data/'
-    feature_dir =  '/features/'
-    data_path =  data_dir  + '/coco/SPOKEN-COCO/'
+
+    data_path =  "../../data/SPOKEN-COCO/"
     train_images,val_images,train_captions,val_captions = split_data (data_path)
     wav_files, wav_files_count = get_wav_files (val_captions)

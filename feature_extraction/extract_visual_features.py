@@ -36,10 +36,10 @@ def save_chunked_vggs (imgs_chunk, data_path, out_file_name ,layer_name = 'block
     save_pickle (image_features, out_file_name )
 
     
-def get_spokencoco_imagenames (data_dir , feature_dir ,  process_train_data , process_val_data , use_shuffle_indices)   :        
-        json_path =  data_dir + 'coco/SPOKEN-COCO/' 
-        data_path = data_dir + 'coco/MSCOCO/'
-        feature_path = feature_dir + 'coco/SPOKEN-COCO/'              
+def get_spokencoco_imagenames ( process_train_data , process_val_data , use_shuffle_indices)   :        
+        json_path =  "../../data/SPOKEN-COCO/" 
+        data_path = "../../data/MSCOCO/"
+        feature_path = "../../features/SPOKEN-COCO/"              
         train_imgs,val_imgs,train_caps,val_caps = split_data (json_path)   
           
         if process_train_data:
@@ -70,8 +70,7 @@ def save_pickle (input_list, filename):
 
 if __name__ == '__main__':
            
-    data_dir = '/data/'
-    feature_dir =  '/features/'     
+       
     processing_train_data = False
     processing_val_data = True 
     using_shuffled_indices = False
@@ -82,7 +81,7 @@ if __name__ == '__main__':
        
     if dataset == 'SPOKEN-COCO':
         # reading file names
-        all_image_files, data_path , output_path = get_spokencoco_imagenames (data_dir , feature_dir , processing_train_data , processing_val_data , using_shuffled_indices)          
+        all_image_files, data_path , output_path = get_spokencoco_imagenames ( processing_train_data , processing_val_data , using_shuffled_indices)          
         # Extracting and saving audio features (one chunk at a time)       
         chuncked_data = data_chunker (all_image_files , chunk_len)    
         for counter_chunk, data_chunk in  enumerate(chuncked_data):

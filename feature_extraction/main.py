@@ -24,10 +24,10 @@ vgg_layer_name = 'block5_conv3'
 ###############################################################################
 
 
-from read_file_names import get_spokencoco_imagenames
-from extract_audio_features import data_chunker
-import save_chunked_vggs
-import get_spokencoco_wavnames
+from extract_audio_features import  get_spokencoco_wavnames, save_chunked_logmels
+from extract_visual_features import get_spokencoco_imagenames, save_chunked_vggs
+from read_file_names import data_chunker
+
 
 if __name__ == '__main__':
       
@@ -43,7 +43,7 @@ if __name__ == '__main__':
             chuncked_data = data_chunker (all_image_files , chunk_len)    
             for counter_chunk, data_chunk in  enumerate(chuncked_data):
                 output_name =  output_path + str(counter_chunk) 
-                save_chunked_vggs (data_chunk, data_path, output_name ,vgg_layer_name)
+                save_chunked_logmels (data_chunk, data_path, output_name ,vgg_layer_name)
                 
         if extracting_visual_features :                 
             # Extracting and saving visual features (one chunk at a time)       

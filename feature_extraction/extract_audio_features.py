@@ -5,10 +5,10 @@ import librosa
 from sklearn.utils import shuffle
 
 
-def get_spokencoco_wavnames (data_dir , feature_dir, process_train_data , process_val_data , shuffle_data)   :
+def get_spokencoco_wavnames ( process_train_data , process_val_data , shuffle_data)   :
         # data and features path
-        data_path =  data_dir + 'coco/SPOKEN-COCO/' 
-        feature_path = feature_dir + 'coco/SPOKEN-COCO/'
+        data_path =  "../../data/SPOKEN-COCO/" 
+        feature_path = "../../features/SPOKEN-COCO/"
         
         # Getting file names
         train_imgs,val_imgs,train_caps,val_caps = split_data (data_path)   
@@ -85,10 +85,7 @@ def save_pickle (input_list, filename):
     
 
 if __name__ == '__main__':
-           
-    data_dir = '/data/'
-    feature_dir =  '/features/' 
-    
+
     processing_train_data = True
     processing_val_data = False 
     data_shuffling = False
@@ -103,7 +100,7 @@ if __name__ == '__main__':
         
     if dataset == 'SPOKEN-COCO':
         # reading wav file names
-        all_wav_files, all_wav_files_counts, data_path , output_path = get_spokencoco_wavnames (data_dir, feature_dir , processing_train_data , processing_val_data , data_shuffling)          
+        all_wav_files, all_wav_files_counts, data_path , output_path = get_spokencoco_wavnames ( processing_train_data , processing_val_data , data_shuffling)          
         # Extracting and saving audio features (one chunk at a time)       
         chuncked_wavs = data_chunker (all_wav_files , chunk_len)    
         for counter_chunk, data_chunk in  enumerate(chuncked_wavs):
