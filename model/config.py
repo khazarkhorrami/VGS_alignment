@@ -6,7 +6,7 @@ paths = {
   "model_name": "CNNatt",
   "model_subname": "v0",
   "modeldir": "../../model/",
-  "featuredir": "../../features/SPOKEN-COCO/",
+  "featuredir": "/run/media/hxkhkh/khazar_data_1/khazar/features/coco/SPOKEN-COCO/",#"../../features/SPOKEN-COCO/",
   "visual_feature_name" : "vggb5conv3_",
   "audio_feature_name" : "logmel_"
 }

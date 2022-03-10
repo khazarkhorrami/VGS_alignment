@@ -3,7 +3,7 @@ import numpy
 import scipy.io
 from matplotlib import pyplot as plt
 
-import keras
+from tensorflow import keras
 
 from utils import prepare_triplet_data , triplet_loss , calculate_recallat10
 from model import VGS

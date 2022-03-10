@@ -2,7 +2,7 @@ import numpy
 import pickle
 
 import scipy.spatial as ss
-from keras import backend as K
+from tensorflow.keras import backend as K
 
 
 def loadXdata (filename, len_of_longest_sequence , i_cap):
