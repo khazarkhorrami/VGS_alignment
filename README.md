@@ -5,7 +5,7 @@
 Audio-Visual alignment analysis in a cross-modal attention -based VGS model.
 
 
-Code for the paper "Evaluation of Audio-Visual alignments in Visually Gropunded Speech Modelos" by Khazar Khorrami and Okko Räsänen, presented at interspeech 2021.
+Code for the paper "Evaluation of Audio-Visual Alignments in Visually Gropunded Speech Modelos" by Khazar Khorrami and Okko Räsänen, presented at interspeech 2021.
 
 Link to the paper: https://www.isca-archive.org/interspeech_2021/khorrami21_interspeech.pdf
 
