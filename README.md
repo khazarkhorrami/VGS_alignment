@@ -2,16 +2,15 @@
 
 # VGS_alignment
 
+![tensor](https://github.com/khazarkhorrami/VGS_alignment/assets/33454475/989ff7a1-0c78-4d34-a65c-7cd76e332b78)
+
+
 Audio-Visual alignment analysis in a cross-modal attention -based VGS model.
 
 
 Code for the paper "Evaluation of Audio-Visual Alignments in Visually Gropunded Speech Modelos" by Khazar Khorrami and Okko Räsänen, presented at interspeech 2021.
 
 Link to the paper: https://www.isca-archive.org/interspeech_2021/khorrami21_interspeech.pdf
-
-
-![tensor](https://github.com/khazarkhorrami/VGS_alignment/assets/33454475/989ff7a1-0c78-4d34-a65c-7cd76e332b78)
-
 
 
 ## Implementation details
