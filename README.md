@@ -9,6 +9,11 @@ Code for the paper "Evaluation of Audio-Visual Alignments in Visually Gropunded 
 
 Link to the paper: https://www.isca-archive.org/interspeech_2021/khorrami21_interspeech.pdf
 
+
+![tensor](https://github.com/khazarkhorrami/VGS_alignment/assets/33454475/989ff7a1-0c78-4d34-a65c-7cd76e332b78)
+
+
+
 ## Implementation details
 
 All code is developed and tested in keras 2.3.1 using Tensorflow 1.15.0. Example Anaconda environment can be prepared as below:
