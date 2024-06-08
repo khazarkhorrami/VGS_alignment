@@ -2,7 +2,7 @@
 
 # VGS_alignment
 
-![tensor](https://github.com/khazarkhorrami/VGS_alignment/assets/33454475/989ff7a1-0c78-4d34-a65c-7cd76e332b78)
+<img src="https://github.com/khazarkhorrami/VGS_alignment/assets/33454475/989ff7a1-0c78-4d34-a65c-7cd76e332b78" alt="tensor" width="500" height="300">
 
 
 Audio-Visual alignment analysis in a cross-modal attention -based VGS model.
