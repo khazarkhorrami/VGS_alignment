@@ -1,16 +1,19 @@
 
 
-# VGS_alignment
+# Evaluation of word-object alignment in visually grounded speech processing
+
+
+This repositort contains the code for audio-visual alignment analysis in a cross-modal attention -based visually grounded speech models.
+
+"Evaluation of Audio-Visual Alignments in Visually Gropunded Speech Modelos" by Khazar Khorrami and Okko Räsänen, presented at interspeech 2021.
+
+Link to the paper: https://www.isca-archive.org/interspeech_2021/khorrami21_interspeech.pdf
+
+
+# Audio-visual alignment tensor
 
 <img src="https://github.com/khazarkhorrami/VGS_alignment/assets/33454475/989ff7a1-0c78-4d34-a65c-7cd76e332b78" alt="tensor" width="500" height="300">
 
-
-Audio-Visual alignment analysis in a cross-modal attention -based VGS model.
-
-
-Code for the paper "Evaluation of Audio-Visual Alignments in Visually Gropunded Speech Modelos" by Khazar Khorrami and Okko Räsänen, presented at interspeech 2021.
-
-Link to the paper: https://www.isca-archive.org/interspeech_2021/khorrami21_interspeech.pdf
 
 
 ## Implementation details
